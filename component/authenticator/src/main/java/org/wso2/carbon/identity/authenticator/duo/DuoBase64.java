@@ -355,8 +355,7 @@ public class DuoBase64 {
      * @param numSigBytes the number of significant bytes in your array
      * @return four byte array in Base64 notation.
      */
-    private static byte[] encode3to4(byte[] b4, byte[] threeBytes,
-                                     int numSigBytes, int options) {
+    private static byte[] encode3to4(byte[] b4, byte[] threeBytes, int numSigBytes, int options) {
         encode3to4(threeBytes, 0, numSigBytes, b4, 0, options);
         return b4;
     }
@@ -484,19 +483,14 @@ public class DuoBase64 {
             throw new NullPointerException("Cannot serialize a null array.");
         }
         if (off < 0) {
-            throw new IllegalArgumentException("Cannot have negative offset: "
-                    + off);
+            throw new IllegalArgumentException("Cannot have negative offset: " + off);
         }
         if (len < 0) {
-            throw new IllegalArgumentException("Cannot have length offset: "
-                    + len);
+            throw new IllegalArgumentException("Cannot have length offset: " + len);
         }
         if (off + len > source.length) {
-            throw new IllegalArgumentException(
-                    String
-                            .format(
-                                    "Cannot have offset of %d and length of %d with array of length %d",
-                                    off, len, source.length));
+            throw new IllegalArgumentException(String.format("Cannot have offset of %d and length of %d with array of length %d",
+                            off, len, source.length));
         }
         if ((options & GZIP) != 0) {
             java.io.ByteArrayOutputStream baos = null;
@@ -612,17 +606,12 @@ public class DuoBase64 {
             throw new NullPointerException("Destination array was null.");
         }
         if (srcOffset < 0 || srcOffset + 3 >= source.length) {
-            throw new IllegalArgumentException(
-                    String
-                            .format(
-                                    "Source array with length %d cannot have offset of %d and still process four bytes.",
+            throw new IllegalArgumentException(String.format("Source array with length %d cannot have offset of %d and still process four bytes.",
                                     source.length, srcOffset));
         }
         if (destOffset < 0 || destOffset + 2 >= destination.length) {
             throw new IllegalArgumentException(
-                    String
-                            .format(
-                                    "Destination array with length %d cannot have offset of %d and still store three bytes.",
+                    String.format("Destination array with length %d cannot have offset of %d and still store three bytes.",
                                     destination.length, destOffset));
         }
         byte[] DECODABET = getDecodabet(options);
@@ -691,16 +680,13 @@ public class DuoBase64 {
         }
         if (off < 0 || off + len > source.length) {
             throw new IllegalArgumentException(
-                    String
-                            .format(
-                                    "Source array with length %d cannot have offset of %d and process %d bytes.",
-                                    source.length, off, len));
+                    String.format("Source array with length %d cannot have offset of %d and process %d bytes.",
+                            source.length, off, len));
         }
         if (len == 0) {
             return new byte[0];
         } else if (len < 4) {
-            throw new IllegalArgumentException(
-                    "Base64-encoded string must have at least four characters, but length specified was "
+            throw new IllegalArgumentException("Base64-encoded string must have at least four characters, but length specified was "
                             + len);
         }
         byte[] DECODABET = getDecodabet(options);
@@ -733,10 +719,7 @@ public class DuoBase64 {
             }
             else {
                 // There's a bad input character in the Base64 stream.
-                throw new java.io.IOException(
-                        String
-                                .format(
-                                        "Bad Base64 input character decimal %d in array position %d",
+                throw new java.io.IOException(String.format("Bad Base64 input character decimal %d in array position %d",
                                         ((int) source[i]) & 0xFF, i));
             }
         } // each input character
@@ -767,8 +750,7 @@ public class DuoBase64 {
      * @throws java.io.IOException  if there is an error
      * @throws NullPointerException if s is null
      */
-    public static byte[] decode(String s, int options)
-            throws java.io.IOException {
+    public static byte[] decode(String s, int options) throws java.io.IOException {
         if (s == null) {
             throw new NullPointerException("Input string was null.");
         }
@@ -915,8 +897,7 @@ public class DuoBase64 {
                     }
                 }
                 else if (decodabet[theByte & 0x7f] != WHITE_SPACE_ENC) {
-                    throw new java.io.IOException(
-                            "Invalid character in Base64 data.");
+                    throw new java.io.IOException("Invalid character in Base64 data.");
                 }
             }
         }
@@ -929,8 +910,7 @@ public class DuoBase64 {
          * @param len      max number of bytes to read into array
          */
         @Override
-        public void write(byte[] theBytes, int off, int len)
-                throws java.io.IOException {
+        public void write(byte[] theBytes, int off, int len) throws java.io.IOException {
             // Encoding suspended?
             if (suspendEncoding) {
                 this.out.write(theBytes, off, len);
@@ -953,8 +933,7 @@ public class DuoBase64 {
                     position = 0;
                 }
                 else {
-                    throw new java.io.IOException(
-                            "Base64 input not properly padded.");
+                    throw new java.io.IOException("Base64 input not properly padded.");
                 }
             }
         }

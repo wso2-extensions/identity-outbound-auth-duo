@@ -18,8 +18,7 @@ Do the following:
     to <IS-HOME>/repository/components/dropins
 
 3.  Update or Introduce the parameters in application-authentication.xml file at location <IS_HOME>/repository/conf/identity and
-            </AuthenticatorConfig>
-                <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
+            <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
                 <Parameter name="EnableMobileVerification">true</Parameter>
             </AuthenticatorConfig>
 

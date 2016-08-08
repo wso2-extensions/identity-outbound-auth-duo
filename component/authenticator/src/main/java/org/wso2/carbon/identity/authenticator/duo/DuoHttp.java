@@ -61,10 +61,7 @@ public class DuoHttp {
     public Object executeRequest() throws Exception {
         JSONObject result = new JSONObject(executeRequestRaw());
         if (!result.getString("stat").equals("OK")) {
-            throw new Exception("Duo error code ("
-                    + result.getInt("code")
-                    + "): "
-                    + result.getString("message"));
+            throw new Exception("Duo error code (" + result.getInt("code") + "): " + result.getString("message"));
         }
         return result.get("response");
     }
@@ -93,11 +90,9 @@ public class DuoHttp {
             }
             builder.delete();
         } else {
-            throw new UnsupportedOperationException("Unsupported method: "
-                    + method);
+            throw new UnsupportedOperationException("Unsupported method: " + method);
         }
-        Request request = builder.url(url)
-                .build();
+        Request request = builder.url(url).build();
         // Set up client.
         OkHttpClient httpclient = new OkHttpClient();
         if (proxy != null) {
@@ -108,17 +103,14 @@ public class DuoHttp {
         httpclient.setReadTimeout(timeout, TimeUnit.SECONDS);
         // finish and execute request
         builder.headers(headers.build());
-        return httpclient.newCall(builder.build())
-                .execute();
+        return httpclient.newCall(builder.build()).execute();
     }
 
-    public void signRequest(String ikey, String skey)
-            throws UnsupportedEncodingException {
+    public void signRequest(String ikey, String skey) throws UnsupportedEncodingException {
         signRequest(ikey, skey, 2);
     }
 
-    public void signRequest(String ikey, String skey, int sig_version)
-            throws UnsupportedEncodingException {
+    public void signRequest(String ikey, String skey, int sig_version) throws UnsupportedEncodingException {
         String date = formatDate(new Date());
         String canon = canonRequest(date, sig_version);
         String sig = signHMAC(skey, canon);
@@ -181,16 +173,8 @@ public class DuoHttp {
         }
         Collections.sort(keys);
         for (String key : keys) {
-            String name = URLEncoder
-                    .encode(key, "UTF-8")
-                    .replace("+", "%20")
-                    .replace("*", "%2A")
-                    .replace("%7E", "~");
-            String value = URLEncoder
-                    .encode(params.get(key), "UTF-8")
-                    .replace("+", "%20")
-                    .replace("*", "%2A")
-                    .replace("%7E", "~");
+            String name = URLEncoder.encode(key, "UTF-8").replace("+", "%20").replace("*", "%2A").replace("%7E", "~");
+            String value = URLEncoder.encode(params.get(key), "UTF-8").replace("+", "%20").replace("*", "%2A").replace("%7E", "~");
             args.add(name + "=" + value);
         }
         return DuoUtil.join(args.toArray(), "&");

@@ -37,7 +37,8 @@ public final class DuoWeb {
     public static final String ERROR_USER = "ERR|The username passed to sign_request() is invalid.";
     public static final String ERROR_IKEY = "ERR|The Duo integration key passed to sign_request() is invalid.";
     public static final String ERROR_SKEY = "ERR|The Duo secret key passed to sign_request() is invalid.";
-    public static final String ERROR_AKEY = "ERR|The application secret key passed to sign_request() must be at least " + AKEY_LEN + " characters.";
+    public static final String ERROR_AKEY = "ERR|The application secret key passed to sign_request() must be at least " +
+            AKEY_LEN + " characters.";
     public static final String ERROR_UNKNOWN = "ERR|An unknown error has occurred.";
 
     public static String signRequest(final String ikey, final String skey, final String akey, final String username) {

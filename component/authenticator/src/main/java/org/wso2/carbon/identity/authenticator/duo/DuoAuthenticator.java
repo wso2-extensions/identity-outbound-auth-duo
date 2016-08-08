@@ -19,6 +19,7 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -76,7 +77,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         String username = getLocalAuthenticatedUser(context);
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
-        if (username != null) {
+        if (StringUtils.isNotEmpty(username)) {
             int tenantId;
             try {
                 //Get the tenant id of the given user.
@@ -98,9 +99,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             if (log.isDebugEnabled()) {
                 log.debug("mobile number : " + mobile);
             }
-            if (mobile != null) {
+            if (StringUtils.isNotEmpty(mobile)) {
                 JSONArray userAttributes = getUserInfo(context, username);
-                boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
+                boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
+                        get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
                 if (isVerifyPhone) {
                     try {
                         number = getPhoneNumber(context, userAttributes);
@@ -113,7 +115,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                                 DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH);
                     }
                 }
-                String sig_request = DuoWeb.signRequest(authenticatorProperties.get(DuoAuthenticatorConstants.INTEGRATION_KEY),
+                String sig_request = DuoWeb.signRequest(authenticatorProperties.
+                                get(DuoAuthenticatorConstants.INTEGRATION_KEY),
                         authenticatorProperties.get(DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
                 String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
                         .replace(loginPage, DuoAuthenticatorConstants.DUO_PAGE);
@@ -165,8 +168,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {
-        Map<String, String> authenticatorProperties = context
-                .getAuthenticatorProperties();
+        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Object result;
         DuoHttp duoRequest = new DuoHttp(DuoAuthenticatorConstants.HTTP_GET,
                 authenticatorProperties.get(DuoAuthenticatorConstants.HOST), DuoAuthenticatorConstants.API_USER);
@@ -174,27 +176,23 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         try {
             duoRequest.signRequest(authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_IKEY),
                     authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_SKEY));
-        } catch (UnsupportedEncodingException e) {
-            throw new AuthenticationFailedException(
-                    DuoAuthenticatorConstants.DuoErrors.ERROR_SIGN_REQUEST, e);
-        }
-        try {
             //Execute Duo API request
             result = duoRequest.executeRequest();
-        } catch (Exception e) {
-            throw new AuthenticationFailedException(
-                    DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
-        }
-        try {
             JSONArray userInfo = new JSONArray(result.toString());
             if (userInfo.length() == 0) {
                 throw new AuthenticationFailedException(
                         DuoAuthenticatorConstants.DuoErrors.ERROR_USER_NOT_FOUND);
             }
             return userInfo;
+        } catch (UnsupportedEncodingException e) {
+            throw new AuthenticationFailedException(
+                    DuoAuthenticatorConstants.DuoErrors.ERROR_SIGN_REQUEST, e);
         } catch (JSONException e) {
             throw new AuthenticationFailedException(
                     DuoAuthenticatorConstants.DuoErrors.ERROR_JSON, e);
+        }catch (Exception e) {
+            throw new AuthenticationFailedException(
+                    DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
         }
     }
 
@@ -204,7 +202,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @param userInfo user's Attributes
      * @return number  duo user's phone number
      */
-    private String getPhoneNumber(AuthenticationContext context, JSONArray userInfo) throws AuthenticationFailedException, JSONException {
+    private String getPhoneNumber(AuthenticationContext context, JSONArray userInfo) throws AuthenticationFailedException,
+            JSONException {
         JSONArray phoneArray;
         context.setProperty("userInfo", userInfo);
         JSONObject object = userInfo.getJSONObject(0);

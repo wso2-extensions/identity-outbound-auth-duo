@@ -100,10 +100,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 log.debug("mobile number : " + mobile);
             }
             if (StringUtils.isNotEmpty(mobile)) {
-                JSONArray userAttributes = getUserInfo(context, username);
                 boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
                         get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
                 if (isVerifyPhone) {
+                    JSONArray userAttributes = getUserInfo(context, username);
                     try {
                         number = getPhoneNumber(context, userAttributes);
                     } catch (JSONException e) {
@@ -244,7 +244,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         adminIntegrationKey.setDisplayName("Admin Integration Key");
         adminIntegrationKey.setName(DuoAuthenticatorConstants.ADMIN_IKEY);
         adminIntegrationKey.setDescription("Enter Admin Integration Key");
-        adminIntegrationKey.setRequired(true);
+        adminIntegrationKey.setRequired(false);
         duoHost.setDisplayOrder(3);
         configProperties.add(adminIntegrationKey);
 
@@ -260,7 +260,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         Property adminSecretKey = new Property();
         adminSecretKey.setName(DuoAuthenticatorConstants.ADMIN_SKEY);
         adminSecretKey.setDisplayName("Admin Secret Key");
-        adminSecretKey.setRequired(true);
+        adminSecretKey.setRequired(false);
         adminSecretKey.setDescription("Enter Admin Secret Key");
         adminSecretKey.setConfidential(true);
         duoHost.setDisplayOrder(5);

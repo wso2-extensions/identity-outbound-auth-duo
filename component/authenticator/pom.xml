@@ -20,12 +20,12 @@
     <parent>
         <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
         <artifactId>org.wso2.carbon.extension.identity.authenticator.duo</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.connector</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon - Authenticator Library For Duo</name>
     <url>http://wso2.org</url>
@@ -101,8 +101,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0</version>
+                <version>2.3.1</version>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <source>1.7</source>
                     <target>1.7</target>
                     <debug>true</debug>
@@ -116,7 +117,11 @@
                     <parallel>methods</parallel>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
+                <version>1.7.2</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -144,19 +149,6 @@
                         </Export-Package>
                     </instructions>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-                <version>1.7.2</version>
-                <executions>
-                    <execution>
-                        <id>generate-scr-scrdescriptor</id>
-                        <goals>
-                            <goal>scr</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

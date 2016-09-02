@@ -99,10 +99,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             if (log.isDebugEnabled()) {
                 log.debug("mobile number : " + mobile);
             }
-            if (StringUtils.isNotEmpty(mobile)) {
-                boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
+            boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
                         get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
-                if (isVerifyPhone) {
+            if (isVerifyPhone) {
+                if (StringUtils.isNotEmpty(mobile)) {
                     JSONArray userAttributes = getUserInfo(context, username);
                     try {
                         number = getPhoneNumber(context, userAttributes);
@@ -114,13 +114,18 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         throw new AuthenticationFailedException(
                                 DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH);
                     }
+                } else {
+                    throw new AuthenticationFailedException(
+                            DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_NOT_FOUND);
                 }
-                String sig_request = DuoWeb.signRequest(authenticatorProperties.
+            }
+                
+            String sig_request = DuoWeb.signRequest(authenticatorProperties.
                                 get(DuoAuthenticatorConstants.INTEGRATION_KEY),
                         authenticatorProperties.get(DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
-                String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
+            String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
                         .replace(loginPage, DuoAuthenticatorConstants.DUO_PAGE);
-                String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
+            String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
                         "=" + getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME + "&" +
                         FrameworkConstants.RequestParams.TYPE + "=" +
                         DuoAuthenticatorConstants.RequestParams.DUO + "&" +
@@ -129,16 +134,12 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         context.getContextIdentifier() + "&" +
                         DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
                         authenticatorProperties.get(DuoAuthenticatorConstants.HOST);
-                try {
-                    //Redirect to Duo Authentication page
-                    response.sendRedirect(response.encodeRedirectURL(DuoUrl));
-                } catch (IOException e) {
-                    throw new AuthenticationFailedException(
-                            DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
-                }
-            } else {
+            try {
+                //Redirect to Duo Authentication page
+                response.sendRedirect(response.encodeRedirectURL(DuoUrl));
+            } catch (IOException e) {
                 throw new AuthenticationFailedException(
-                        DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_NOT_FOUND);
+                        DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             }
         } else {
             throw new AuthenticationFailedException("Duo authenticator failed to initialize");

@@ -131,7 +131,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         authenticatorProperties.get(DuoAuthenticatorConstants.HOST);
                 try {
                     //Redirect to Duo Authentication page
-                    response.sendRedirect(response.encodeRedirectURL(DuoUrl));
+                    response.sendRedirect(DuoUrl);
                 } catch (IOException e) {
                     throw new AuthenticationFailedException(
                             DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
@@ -190,7 +190,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } catch (JSONException e) {
             throw new AuthenticationFailedException(
                     DuoAuthenticatorConstants.DuoErrors.ERROR_JSON, e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new AuthenticationFailedException(
                     DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
         }

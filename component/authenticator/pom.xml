@@ -16,20 +16,17 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
-        <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
-        <artifactId>org.wso2.carbon.extension.identity.authenticator.duo</artifactId>
+        <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
+        <artifactId>identity-outbound-auth-duo</artifactId>
         <version>1.0.2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.connector</artifactId>
     <version>1.0.2-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon - Authenticator Library For Duo</name>
     <url>http://wso2.org</url>
-
     <dependencies>
         <dependency>
             <groupId>org.json</groupId>
@@ -50,12 +47,6 @@
             <groupId>org.json</groupId>
             <artifactId>org.json</artifactId>
             <version>chargebee-1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>2.3.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

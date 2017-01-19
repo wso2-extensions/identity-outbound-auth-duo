@@ -19,6 +19,7 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+import org.apache.catalina.util.URLEncoder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +74,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         String number;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        URLEncoder encoder = new URLEncoder();
         String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         String username = getLocalAuthenticatedUser(context);
@@ -121,14 +123,14 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
                         .replace(loginPage, DuoAuthenticatorConstants.DUO_PAGE);
                 String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
-                        "=" + getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME + "&" +
+                        "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME)  + "&" +
                         FrameworkConstants.RequestParams.TYPE + "=" +
                         DuoAuthenticatorConstants.RequestParams.DUO + "&" +
                         DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
-                        sig_request + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
+                        encoder.encode(sig_request) + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
                         context.getContextIdentifier() + "&" +
                         DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
-                        authenticatorProperties.get(DuoAuthenticatorConstants.HOST);
+                        encoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST));
                 try {
                     //Redirect to Duo Authentication page
                     response.sendRedirect(DuoUrl);

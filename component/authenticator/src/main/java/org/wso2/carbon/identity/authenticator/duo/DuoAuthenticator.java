@@ -19,6 +19,7 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+import org.apache.catalina.util.URLEncoder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +74,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         String number;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        URLEncoder encoder = new URLEncoder();
         String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         String username = getLocalAuthenticatedUser(context);
@@ -84,60 +86,68 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
                 UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
                 username = MultitenantUtils.getTenantAwareUsername(username);
+              
+                UserStoreManager userStoreManager;
                 if (userRealm != null) {
-                    UserStoreManager userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-                    mobile = userStoreManager.getUserClaimValue(username,
-                            DuoAuthenticatorConstants.MOBILE_CLAIM, null);
+                    userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
                 } else {
                     throw new AuthenticationFailedException(
                             "Cannot find the user realm for the given tenant: " + tenantId);
                 }
+              
+                boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
+                            get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
+                if (isVerifyPhone) {
+                    mobile = userStoreManager.getUserClaimValue(username,
+                                    DuoAuthenticatorConstants.MOBILE_CLAIM, null);
+                    if (log.isDebugEnabled()) {
+                        log.debug("mobile number : " + mobile);
+                    }
+                    if (StringUtils.isNotEmpty(mobile)) {
+                        JSONArray userAttributes = getUserInfo(context, username);
+                        try {
+                            number = getPhoneNumber(context, userAttributes);
+                        } catch (JSONException e) {
+                            throw new AuthenticationFailedException(
+                                    DuoAuthenticatorConstants.DuoErrors.ERROR_GETTING_PHONE);
+                        }
+                        if (!mobile.equals(number)) {
+                            throw new AuthenticationFailedException(
+                                    DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH);
+                        }
+                    } else {
+                        throw new AuthenticationFailedException(
+                                DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_NOT_FOUND);
+                    }
+                }
+              
             } catch (IdentityException | UserStoreException e) {
                 throw new AuthenticationFailedException(
                         DuoAuthenticatorConstants.DuoErrors.ERROR_USER_STORE, e);
             }
-            if (log.isDebugEnabled()) {
-                log.debug("mobile number : " + mobile);
-            }
-            boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
-                        get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
-            if (isVerifyPhone) {
-                if (StringUtils.isNotEmpty(mobile)) {
-                    JSONArray userAttributes = getUserInfo(context, username);
-                    try {
-                        number = getPhoneNumber(context, userAttributes);
-                    } catch (JSONException e) {
-                        throw new AuthenticationFailedException(
-                                DuoAuthenticatorConstants.DuoErrors.ERROR_GETTING_PHONE);
-                    }
-                    if (!mobile.equals(number)) {
-                        throw new AuthenticationFailedException(
-                                DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH);
-                    }
-                } else {
-                    throw new AuthenticationFailedException(
-                            DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_NOT_FOUND);
-                }
-            }
-                
+            
             String sig_request = DuoWeb.signRequest(authenticatorProperties.
                                 get(DuoAuthenticatorConstants.INTEGRATION_KEY),
                         authenticatorProperties.get(DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
             String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
                         .replace(loginPage, DuoAuthenticatorConstants.DUO_PAGE);
-            String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
-                        "=" + getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME + "&" +
+                String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
+                        "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME)  + "&" +
                         FrameworkConstants.RequestParams.TYPE + "=" +
                         DuoAuthenticatorConstants.RequestParams.DUO + "&" +
                         DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
-                        sig_request + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
+                        encoder.encode(sig_request) + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
                         context.getContextIdentifier() + "&" +
                         DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
-                        authenticatorProperties.get(DuoAuthenticatorConstants.HOST);
-            try {
-                //Redirect to Duo Authentication page
-                response.sendRedirect(response.encodeRedirectURL(DuoUrl));
-            } catch (IOException e) {
+                        encoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST));
+                try {
+                    //Redirect to Duo Authentication page
+                    response.sendRedirect(DuoUrl);
+                } catch (IOException e) {
+                    throw new AuthenticationFailedException(
+                            DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
+                }
+            } else {
                 throw new AuthenticationFailedException(
                         DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             }
@@ -191,7 +201,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } catch (JSONException e) {
             throw new AuthenticationFailedException(
                     DuoAuthenticatorConstants.DuoErrors.ERROR_JSON, e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new AuthenticationFailedException(
                     DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
         }

@@ -17,13 +17,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
-        <artifactId>org.wso2.carbon.extension.identity.authenticator.duo</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
+        <artifactId>identity-outbound-auth-duo</artifactId>
+        <version>1.0.3-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.endpoint</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>WSO2 Carbon - Identity Application Authentication Duo Endpoint</name>
     <description>Identity Application Authentication Duo Endpoint</description>

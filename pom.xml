@@ -23,9 +23,9 @@
         <artifactId>wso2</artifactId>
         <version>1</version>
     </parent>
-    <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
-    <artifactId>org.wso2.carbon.extension.identity.authenticator.duo</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
+    <artifactId>identity-outbound-auth-duo</artifactId>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Extension - Duo Pom</name>
     <url>http://wso2.org</url>

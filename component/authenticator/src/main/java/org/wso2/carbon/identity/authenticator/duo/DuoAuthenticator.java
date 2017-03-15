@@ -141,7 +141,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else {
             throw new AuthenticationFailedException("Duo authenticator failed to initialize");
         }
-
     }
 
     /**

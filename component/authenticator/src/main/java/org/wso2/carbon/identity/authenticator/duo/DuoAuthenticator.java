@@ -83,11 +83,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
                         get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
                 if (isVerifyPhone) {
-                    String mobile;
-                    String number;
-                    int tenantId;
                     //Get the tenant id of the given user.
-                    tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
+                    int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
                     UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
                     UserStoreManager userStoreManager;
                     if (userRealm != null) {
@@ -96,14 +93,14 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         throw new AuthenticationFailedException(
                                 "Cannot find the user realm for the given tenant: " + tenantId);
                     }
-                    mobile = userStoreManager.getUserClaimValue(username,
+                    String mobile = userStoreManager.getUserClaimValue(username,
                             DuoAuthenticatorConstants.MOBILE_CLAIM, null);
                     if (log.isDebugEnabled()) {
                         log.debug("mobile number : " + mobile);
                     }
                     if (StringUtils.isNotEmpty(mobile)) {
                         JSONArray userAttributes = getUserInfo(context, username);
-                        number = getPhoneNumber(context, userAttributes);
+                        String number = getPhoneNumber(context, userAttributes);
                         if (!mobile.equals(number)) {
                             throw new AuthenticationFailedException(
                                     DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH);

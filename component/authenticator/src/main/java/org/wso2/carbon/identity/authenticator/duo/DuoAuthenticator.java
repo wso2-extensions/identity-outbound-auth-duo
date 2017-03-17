@@ -80,19 +80,24 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         if (StringUtils.isNotEmpty(username)) {
             try {
                 username = MultitenantUtils.getTenantAwareUsername(username);
+                if(log.isDebugEnabled()) {
+                    log.debug("username (tenant aware) : " + username);
+                }
                 boolean isVerifyPhone = Boolean.parseBoolean(duoParameters.
                         get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION));
-                if (isVerifyPhone) {
-                    //Get the tenant id of the given user.
-                    int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
-                    UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
-                    UserStoreManager userStoreManager;
-                    if (userRealm != null) {
-                        userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-                    } else {
-                        throw new AuthenticationFailedException(
-                                "Cannot find the user realm for the given tenant: " + tenantId);
+
+                // If overriding the username entered with a claim value instead
+                if (duoParameters.containsKey(DuoAuthenticatorConstants.OVERRIDE_USERNAME_CLAIM)) {
+                    String overrideUsernameClaim = String.valueOf(duoParameters.get(DuoAuthenticatorConstants.OVERRIDE_USERNAME_CLAIM));
+                    UserStoreManager userStoreManager = getUserStoreManager(username);
+                    username = userStoreManager.getUserClaimValue(username,overrideUsernameClaim, null);
+                    if (log.isDebugEnabled()) {
+                        log.debug("username (override) : " + username);
                     }
+                }
+
+                if (isVerifyPhone) {
+                    UserStoreManager userStoreManager = getUserStoreManager(username);
                     String mobile = userStoreManager.getUserClaimValue(username,
                             DuoAuthenticatorConstants.MOBILE_CLAIM, null);
                     if (log.isDebugEnabled()) {
@@ -156,13 +161,35 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                     context.getSequenceConfig().getStepMap().get(i).getAuthenticatedAutenticator()
                             .getApplicationAuthenticator() instanceof LocalApplicationAuthenticator) {
                 username = String.valueOf(context.getSequenceConfig().getStepMap().get(i).getAuthenticatedUser());
+
                 if (log.isDebugEnabled()) {
-                    log.debug("username :" + username);
+                    log.debug("username : " + username);
                 }
                 break;
             }
         }
         return username;
+    }
+
+    /**
+     * get user store manager
+     *
+     * @return userStoreManager
+     */
+    private UserStoreManager getUserStoreManager(String username) throws AuthenticationFailedException, UserStoreException {
+        UserStoreManager userStoreManager;
+
+        //Get the tenant id of the given user.
+        int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
+        UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
+        if (userRealm != null) {
+            userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
+        } else {
+            throw new AuthenticationFailedException(
+                    "Cannot find the user realm for the given tenant: " + tenantId);
+        }
+
+        return userStoreManager;
     }
 
     private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {

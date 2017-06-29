@@ -26,6 +26,7 @@ import java.util.Random;
 public abstract class DuoAuthenticatorConstants {
 
     public static final String AUTHENTICATOR_NAME = "DuoAuthenticator";
+    public static final String AUTHENTICATION = "authentication";
     public static final String AUTHENTICATOR_FRIENDLY_NAME = "duo";
     public static final String INTEGRATION_KEY = "IntegrationKey";
     public static final String SECRET_KEY = "SecretKey";
@@ -40,11 +41,18 @@ public abstract class DuoAuthenticatorConstants {
     public static final String DEFAULT_USER_IDENTIFIER = "username";
     public static final String DUO_PHONES = "phones";
     public static final String DUO_PAGE = "duoauthenticationendpoint/duoAuth.jsp";
+    public static final String DUO_ERROR_PAGE = "duoauthenticationendpoint/duoError.jsp";
     public static final String ENABLE_MOBILE_VERIFICATION = "EnableMobileVerification";
     public static final String INTEGRATION_SECRET_KEY = "integrationSecretKey";
     public static final String SESSION_DATA_KEY = "sessionDataKey";
     public static final String HTTP_GET = "GET";
     public static final String RAND = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String USER_NOT_REGISTERED_IN_DUO = "userNotFound";
+    public static final String NUMBER_MISMATCH = "numberMismatch";
+    public static final String MOBILE_NUMBER_NOT_FOUND = "unableToFindMobileNumber";
+    public static final String MOBILE_CLAIM_NOT_FOUND = "unableToFindMobileClaim";
+    public static final String UNABLE_TO_FIND_VERIFIED_USER = "unableToFindVerifiedUser";
+    public static final String USER_INFO = "userInfo";
 
     public static class RequestParams {
         public static final String DUO = "duo";
@@ -53,17 +61,19 @@ public abstract class DuoAuthenticatorConstants {
     }
 
     public static class DuoErrors {
+        public static final String ERROR_USER_NOT_REGISTERED = "&authFailure=true&authFailureMsg=user.not.registered";
+        public static final String ERROR_GETTING_VERIFIED_USER = "&authFailure=true&authFailureMsg=user.not.found";
+        public static final String ERROR_GETTING_NUMBER_FROM_DUO = "&authFailure=true&authFailureMsg=unable.to.get.duo.mobileNumber";
+        public static final String ERROR_NUMBER_NOT_FOUND = "&authFailure=true&authFailureMsg=unable.to.find.number";
+        public static final String ERROR_NUMBER_MISMATCH = "&authFailure=true&authFailureMsg=number.mismatch";
+
+        public static final String ERROR_JSON = "Error while handling JSON object";
+        public static final String ERROR_USER_ATTRIBUTES = "Error while getting user attributes from DUO";
         public static final String ERROR_VERIFY_USER = "Error while verifying Duo user";
         public static final String ERROR_USER_STORE = "Error while getting mobile number from user store";
         public static final String ERROR_SIGN_REQUEST = "Error while signing Duo request";
         public static final String ERROR_EXECUTE_REQUEST = "Error while executing Duo API request";
-        public static final String ERROR_USER_NOT_FOUND = "User is not registered in Duo. Authentication failed";
-        public static final String ERROR_GETTING_PHONE = "Error getting phone in Duo. Authentication failed";
-        public static final String ERROR_NUMBER_INVALID = "User doesn't have a valid mobile number for Duo Authentication";
-        public static final String ERROR_NUMBER_NOT_FOUND = "User doesn't have a mobile number for Duo Authentication";
         public static final String ERROR_REDIRECTING = "Error while redirecting to Duo authentication page";
-        public static final String ERROR_JSON = "Error while handling JSON object";
-        public static final String ERROR_NUMBER_MISMATCH = "Authentication failed due to mismatch in mobile numbers";
     }
 
     /**

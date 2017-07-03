@@ -29,16 +29,15 @@ import org.json.JSONObject;
 import org.wso2.carbon.identity.application.authentication.framework.AbstractApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
-import org.wso2.carbon.identity.application.authentication.framework.config.ConfigurationFacade;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
-import org.wso2.carbon.identity.application.authentication.framework.exception.InvalidCredentialsException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -72,7 +71,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             throws AuthenticationFailedException {
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         URLEncoder encoder = new URLEncoder();
-        String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         String username = getLocalAuthenticatedUser(context);
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
@@ -86,9 +84,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             String sig_request = DuoWeb.signRequest(authenticatorProperties.get
                     (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
                     (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, tenantAwareUsername);
-            String enrollmentPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
-                    .replace(loginPage, DuoAuthenticatorConstants.DUO_PAGE);
-            String DuoUrl = enrollmentPage + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
+            String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
                     "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME) + "&" +
                     FrameworkConstants.RequestParams.TYPE + "=" +
                     DuoAuthenticatorConstants.RequestParams.DUO + "&" +
@@ -97,6 +93,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                     context.getContextIdentifier() + "&" +
                     DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
                     encoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST));
+            String DuoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
             try {
                 response.sendRedirect(DuoUrl);
             } catch (IOException e) {
@@ -153,7 +150,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                     log.debug("Couldn't get the DUO user information");
                 }
                 context.setProperty(DuoAuthenticatorConstants.USER_NOT_REGISTERED_IN_DUO, true);
-                throw new InvalidCredentialsException("Couldn't find the user information ");
+                throw new AuthenticationFailedException("Couldn't find the user information ");
             }
             return userInfo;
         } catch (UnsupportedEncodingException e) {
@@ -192,7 +189,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             }
         } else {
             context.setProperty(DuoAuthenticatorConstants.MOBILE_CLAIM_NOT_FOUND, true);
-            throw new InvalidCredentialsException("Error while getting the mobile number from user's profile " +
+            throw new AuthenticationFailedException("Error while getting the mobile number from user's profile " +
                     "for username " + username);
         }
     }
@@ -214,7 +211,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 log.debug("Couldn't get the phone number of DUO user");
             }
             context.setProperty(DuoAuthenticatorConstants.MOBILE_NUMBER_NOT_FOUND, true);
-            throw new InvalidCredentialsException("User doesn't have a mobile number in DUO for Authentication ");
+            throw new AuthenticationFailedException("User doesn't have a mobile number in DUO for Authentication ");
         } else {
             for (int i = 0; i < phoneArray.length(); i++) {
                 if (((JSONObject) phoneArray.get(i)).getString(DuoAuthenticatorConstants.DUO_NUMBER).equals(mobile)) {
@@ -263,12 +260,11 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @return redirect url
      */
     private String getErrorPage(AuthenticationContext context) {
-        String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL();
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
-                .replace(loginPage, DuoAuthenticatorConstants.DUO_ERROR_PAGE);
-        return duoErrorPage + "?" + queryParams + DuoAuthenticatorConstants.AUTHENTICATION + getName();
+        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams +
+                DuoAuthenticatorConstants.AUTHENTICATION + getName();
+        return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
 
     /**
@@ -375,7 +371,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 }
             } else {
                 context.setProperty(DuoAuthenticatorConstants.UNABLE_TO_FIND_VERIFIED_USER, true);
-                throw new InvalidCredentialsException("Unable to find verified user from DUO ");
+                throw new AuthenticationFailedException("Unable to find verified user from DUO ");
             }
         } catch (DuoWebException | NoSuchAlgorithmException | InvalidKeyException | IOException e) {
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);

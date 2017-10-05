@@ -19,20 +19,28 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
 <html>
-    <script src="js/Duo-Web-v1.bundled.js"></script>
-    <script type="text/javascript">
-          var value = '<%=request.getParameter("signreq")%>' ;
-          var host = '<%=request.getParameter("duoHost")%>' ;
-          Duo.init({
-              'host': host,
-              'sig_request': value,
-              'post_action': '../../commonauth'
-            });
-    </script>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    </head>
     <body>
-         <iframe id="duo_iframe" width="620" height="330" frameborder="0"></iframe>
+         <iframe id="duo_iframe"
+                 data-host="<%=request.getParameter("duoHost")%>"
+                 data-sig-request="<%=request.getParameter("signreq")%>"
+                 data-post-action="/commonauth">
+         </iframe>
+         <style>
+             #duo_iframe {
+                 width: 100%;
+                 min-width: 304px;
+                 max-width: 620px;
+                 height: 330px;
+                 border: none;
+             }
+         </style>
          <form method="POST" id="duo_form">
              <input type="hidden" name="sessionDataKey" value='<%=request.getParameter("sessionDataKey")%>' />
          </form>
     </body>
+    <script src="js/Duo-Web-v2.min.js"></script>
 </html>

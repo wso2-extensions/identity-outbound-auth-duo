@@ -262,8 +262,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     private String getErrorPage(AuthenticationContext context) {
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams +
-                DuoAuthenticatorConstants.AUTHENTICATION + getName();
+        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
+                DuoAuthenticatorConstants.AUTHENTICATION + "=" + getName();
         return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
 

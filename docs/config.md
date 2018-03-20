@@ -8,7 +8,7 @@ This is tested for the Duo Security API version V2.
 
 * [Configuring the Duo Security app](#configuring-the-duo-security-app)
 * [Deploying Duo Security artifacts](#deploying-duo-security-artifacts)
-* [Deploying travelocity.com sample app](#deploying-travelocity.com-sample-app)
+* [Deploying travelocity.com sample app](#deploying-travelocitycom-sample-app)
 * [Configuring the identity provider](#configuring-the-identity-provider)
 * [Configuring the service provider](#configuring-the-service-provider)
 * [Testing the sample](#testing-the-sample)
@@ -58,7 +58,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     ```
    >> NOTE : When you update the mobile claim in user profile , use the same format of mobile number with country code as you registered in the DUO site. (i.e +9477*******)
 
-### Deploying travelocity.com Sample App
+### Deploying travelocity.com sample app
     
    The next step is to deploy the travelocity.com sample app in order to use it in this scenario.
    To do this, see the topic on [deploying the travelocity.com sample app](https://docs.wso2.com/display/ISCONNECTORS/Deploying+the+Sample+App).

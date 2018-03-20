@@ -176,12 +176,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * Check the validation of phone numbers
      *
      * @param context  the authentication context
+     * @param username the user name
      * @throws AuthenticationFailedException
      * @throws JSONException
      */
     private void checkPhoneNumberValidation(AuthenticationContext context, String username)
             throws AuthenticationFailedException, JSONException {
-        String userNameFromContext = String.valueOf(context.getProperty("username"));
+        String userNameFromContext = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
         String mobile = getMobileClaimValue(userNameFromContext);
         if (StringUtils.isNotEmpty(mobile)) {
             JSONArray userInfo = getUserInfo(context, username);

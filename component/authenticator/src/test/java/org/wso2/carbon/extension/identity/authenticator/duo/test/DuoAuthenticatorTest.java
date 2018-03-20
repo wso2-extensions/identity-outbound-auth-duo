@@ -263,6 +263,10 @@ public class DuoAuthenticatorTest {
         configProperties.add(secretKey);
         Property adminSecretKey = new Property();
         configProperties.add(adminSecretKey);
+        Property disableUserStoreDomain = new Property();
+        configProperties.add(disableUserStoreDomain);
+        Property disableTenantDomain = new Property();
+        configProperties.add(disableTenantDomain);
         Assert.assertEquals(configProperties.size(), duoAuthenticator.getConfigurationProperties().size());
     }
 

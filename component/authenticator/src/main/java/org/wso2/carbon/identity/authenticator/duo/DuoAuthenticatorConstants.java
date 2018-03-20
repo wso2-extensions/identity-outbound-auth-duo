@@ -53,6 +53,8 @@ public abstract class DuoAuthenticatorConstants {
     public static final String MOBILE_CLAIM_NOT_FOUND = "unableToFindMobileClaim";
     public static final String UNABLE_TO_FIND_VERIFIED_USER = "unableToFindVerifiedUser";
     public static final String USER_INFO = "userInfo";
+    public static final String USER_STORE_DOMAIN = "UserStoreDomain";
+    public static final String TENANT_DOMAIN = "TenantDomain";
 
     public static class RequestParams {
         public static final String DUO = "duo";

@@ -41,6 +41,7 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,21 +70,30 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     protected void initiateAuthenticationRequest(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context)
             throws AuthenticationFailedException {
+        String username;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         URLEncoder encoder = new URLEncoder();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
-        String username = getLocalAuthenticatedUser(context);
+        username = getLocalAuthenticatedUser(context);
+        context.setProperty(DuoAuthenticatorConstants.DUO_USERNAME, username);
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
-        String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+        if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN))
+                && Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN))) {
+            username = UserCoreUtil.removeDomainFromName(MultitenantUtils.getTenantAwareUsername(username));
+        } else if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN))) {
+            username = MultitenantUtils.getTenantAwareUsername(username);
+        } else if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN))) {
+            username = UserCoreUtil.removeDomainFromName(username);
+        }
         if (log.isDebugEnabled()) {
-            log.debug("Tenant aware user name : " + tenantAwareUsername);
+            log.debug("user name : " + username);
         }
         if (context.isRetrying()) {
             checkStatusCode(response, context);
-        } else if (StringUtils.isNotEmpty(tenantAwareUsername)) {
+        } else if (StringUtils.isNotEmpty(username)) {
             String sig_request = DuoWeb.signRequest(authenticatorProperties.get
                     (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
-                    (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, tenantAwareUsername);
+                    (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
             String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
                     "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME) + "&" +
                     FrameworkConstants.RequestParams.TYPE + "=" +
@@ -166,13 +176,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * Check the validation of phone numbers
      *
      * @param context  the authentication context
-     * @param username the user name
      * @throws AuthenticationFailedException
      * @throws JSONException
      */
     private void checkPhoneNumberValidation(AuthenticationContext context, String username)
             throws AuthenticationFailedException, JSONException {
-        String mobile = getMobileClaimValue(username);
+        String userNameFromContext = String.valueOf(context.getProperty("username"));
+        String mobile = getMobileClaimValue(userNameFromContext);
         if (StringUtils.isNotEmpty(mobile)) {
             JSONArray userInfo = getUserInfo(context, username);
             context.setProperty(DuoAuthenticatorConstants.USER_INFO, userInfo);
@@ -317,7 +327,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         integrationKey.setName(DuoAuthenticatorConstants.INTEGRATION_KEY);
         integrationKey.setDescription("Enter Integration Key");
         integrationKey.setRequired(true);
-        duoHost.setDisplayOrder(2);
+        integrationKey.setDisplayOrder(2);
         configProperties.add(integrationKey);
 
         Property adminIntegrationKey = new Property();
@@ -325,7 +335,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         adminIntegrationKey.setName(DuoAuthenticatorConstants.ADMIN_IKEY);
         adminIntegrationKey.setDescription("Enter Admin Integration Key");
         adminIntegrationKey.setRequired(false);
-        duoHost.setDisplayOrder(3);
+        adminIntegrationKey.setDisplayOrder(3);
         configProperties.add(adminIntegrationKey);
 
         Property secretKey = new Property();
@@ -334,7 +344,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         secretKey.setDescription("Enter Secret Key");
         secretKey.setRequired(true);
         secretKey.setConfidential(true);
-        duoHost.setDisplayOrder(4);
+        secretKey.setDisplayOrder(4);
         configProperties.add(secretKey);
 
         Property adminSecretKey = new Property();
@@ -343,8 +353,24 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         adminSecretKey.setRequired(false);
         adminSecretKey.setDescription("Enter Admin Secret Key");
         adminSecretKey.setConfidential(true);
-        duoHost.setDisplayOrder(5);
+        adminSecretKey.setDisplayOrder(5);
         configProperties.add(adminSecretKey);
+
+        Property disableUserStoreDomain = new Property();
+        disableUserStoreDomain.setName(DuoAuthenticatorConstants.USER_STORE_DOMAIN);
+        disableUserStoreDomain.setDisplayName("Disable User Store Domain");
+        disableUserStoreDomain.setRequired(false);
+        disableUserStoreDomain.setDescription("Configured as true to disable user store domain");
+        disableUserStoreDomain.setDisplayOrder(6);
+        configProperties.add(disableUserStoreDomain);
+
+        Property disableTenantDomain = new Property();
+        disableTenantDomain.setName(DuoAuthenticatorConstants.TENANT_DOMAIN);
+        disableTenantDomain.setDisplayName("Disable Tenant Domain");
+        disableTenantDomain.setRequired(false);
+        disableTenantDomain.setDescription("Configured as true to disable tenant domain");
+        disableTenantDomain.setDisplayOrder(7);
+        configProperties.add(disableTenantDomain);
 
         return configProperties;
     }

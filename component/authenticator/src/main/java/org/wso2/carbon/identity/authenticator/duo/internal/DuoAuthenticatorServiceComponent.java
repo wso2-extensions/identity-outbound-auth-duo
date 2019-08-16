@@ -34,7 +34,7 @@ import java.util.Hashtable;
  */
 public class DuoAuthenticatorServiceComponent {
 
-    private static Log log = LogFactory.getLog(DuoAuthenticatorServiceComponent.class);
+    private static final Log log = LogFactory.getLog(DuoAuthenticatorServiceComponent.class);
     
     private static RealmService realmService;
     protected void activate(ComponentContext ctxt) {

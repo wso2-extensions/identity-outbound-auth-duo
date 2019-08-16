@@ -59,7 +59,7 @@ import java.util.Map;
  */
 public class DuoAuthenticator extends AbstractApplicationAuthenticator implements FederatedApplicationAuthenticator {
     private static final long serialVersionUID = 4438354156955223654L;
-    private static Log log = LogFactory.getLog(DuoAuthenticator.class);
+    private static final Log log = LogFactory.getLog(DuoAuthenticator.class);
 
     @Override
     public boolean canHandle(HttpServletRequest request) {

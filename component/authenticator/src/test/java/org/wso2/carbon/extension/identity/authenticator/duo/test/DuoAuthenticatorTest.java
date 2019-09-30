@@ -169,21 +169,6 @@ public class DuoAuthenticatorTest {
                 "abc");
     }
 
-    @Test(description = "Test case for getLocalAuthenticatedUser() method.")
-    public void testGetLocalAuthenticatedUser() throws Exception {
-
-        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
-        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
-        when(mockedMap.size()).thenReturn(2);
-        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
-        when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getLocalAuthenticatedUser", context),
-                "admin@carbon.super");
-    }
-
     @Test(description = "Test case for getMobileClaimValue() method.")
     public void testGetMobileClaimValue() throws Exception {
 

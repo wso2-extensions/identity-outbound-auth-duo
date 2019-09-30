@@ -114,28 +114,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get local authenticated user.
-     *
-     * @return username
-     */
-    private String getLocalAuthenticatedUser(AuthenticationContext context) {
-        //Getting the last authenticated local user
-        String username = null;
-        for (int i = context.getSequenceConfig().getStepMap().size() - 1; i > 0; i--) {
-            if (context.getSequenceConfig().getStepMap().get(i).getAuthenticatedUser() != null &&
-                    context.getSequenceConfig().getStepMap().get(i).getAuthenticatedAutenticator()
-                            .getApplicationAuthenticator() instanceof LocalApplicationAuthenticator) {
-                username = String.valueOf(context.getSequenceConfig().getStepMap().get(i).getAuthenticatedUser());
-                if (log.isDebugEnabled()) {
-                    log.debug("username :" + username);
-                }
-                break;
-            }
-        }
-        return username;
-    }
-
-    /**
      * Get DUO user's information.
      *
      * @param context  the authentication context

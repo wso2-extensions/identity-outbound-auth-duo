@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wso2.carbon.extension.identity.helper.FederatedAuthenticatorUtil;
 import org.wso2.carbon.identity.application.authentication.framework.AbstractApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
@@ -34,6 +35,7 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
+import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -41,11 +43,8 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
-import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -53,16 +52,20 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * Mobile based 2nd factor Local Authenticator
+ * Mobile based 2nd factor Local Authenticator.
  */
 public class DuoAuthenticator extends AbstractApplicationAuthenticator implements FederatedApplicationAuthenticator {
+
     private static final long serialVersionUID = 4438354156955223654L;
     private static final Log log = LogFactory.getLog(DuoAuthenticator.class);
 
     @Override
     public boolean canHandle(HttpServletRequest request) {
+
         return request.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE) != null;
     }
 
@@ -70,42 +73,38 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     protected void initiateAuthenticationRequest(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context)
             throws AuthenticationFailedException {
+
         String username;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         URLEncoder encoder = new URLEncoder();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
-        username = getLocalAuthenticatedUser(context);
-        context.setProperty(DuoAuthenticatorConstants.DUO_USERNAME, username);
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
-        if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN))
-                && Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN))) {
-            username = UserCoreUtil.removeDomainFromName(MultitenantUtils.getTenantAwareUsername(username));
-        } else if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN))) {
-            username = MultitenantUtils.getTenantAwareUsername(username);
-        } else if (Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN))) {
-            username = UserCoreUtil.removeDomainFromName(username);
-        }
+        context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
+        FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
+        username = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
+
         if (log.isDebugEnabled()) {
             log.debug("user name : " + username);
         }
         if (context.isRetrying()) {
             checkStatusCode(response, context);
         } else if (StringUtils.isNotEmpty(username)) {
-            String sig_request = DuoWeb.signRequest(authenticatorProperties.get
+            String signRequest = DuoWeb.signRequest(authenticatorProperties.get
                     (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
                     (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
-            String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?" + FrameworkConstants.RequestParams.AUTHENTICATOR +
+            String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?"
+                    + FrameworkConstants.RequestParams.AUTHENTICATOR +
                     "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME) + "&" +
                     FrameworkConstants.RequestParams.TYPE + "=" +
                     DuoAuthenticatorConstants.RequestParams.DUO + "&" +
                     DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
-                    encoder.encode(sig_request) + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
+                    encoder.encode(signRequest) + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
                     context.getContextIdentifier() + "&" +
                     DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
                     encoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST));
-            String DuoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
+            String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
             try {
-                response.sendRedirect(DuoUrl);
+                response.sendRedirect(duoUrl);
             } catch (IOException e) {
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             }
@@ -115,7 +114,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * get local authenticated user
+     * Get local authenticated user.
      *
      * @return username
      */
@@ -137,7 +136,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get DUO user's information
+     * Get DUO user's information.
      *
      * @param context  the authentication context
      * @param username the username
@@ -145,6 +144,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @throws AuthenticationFailedException
      */
     private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {
+
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         DuoHttp duoRequest = new DuoHttp(DuoAuthenticatorConstants.HTTP_GET,
                 authenticatorProperties.get(DuoAuthenticatorConstants.HOST), DuoAuthenticatorConstants.API_USER);
@@ -173,7 +173,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Check the validation of phone numbers
+     * Check the validation of phone numbers.
      *
      * @param context  the authentication context
      * @param username the user name
@@ -182,8 +182,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      */
     private void checkPhoneNumberValidation(AuthenticationContext context, String username)
             throws AuthenticationFailedException, JSONException {
-        String userNameFromContext = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
-        String mobile = getMobileClaimValue(userNameFromContext);
+
+        String mobile = getMobileClaimValue(context);
         if (StringUtils.isNotEmpty(mobile)) {
             JSONArray userInfo = getUserInfo(context, username);
             context.setProperty(DuoAuthenticatorConstants.USER_INFO, userInfo);
@@ -206,7 +206,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Verify the duo phone number with user's mobile claim value
+     * Verify the duo phone number with user's mobile claim value.
      *
      * @param context    the authentication context
      * @param phoneArray array with phone numbers
@@ -217,6 +217,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      */
     private boolean isValidPhoneNumber(AuthenticationContext context, JSONArray phoneArray, String mobile)
             throws AuthenticationFailedException, JSONException {
+
         if (phoneArray.length() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Couldn't get the phone number of DUO user");
@@ -234,7 +235,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Check the status codes when retry enabled
+     * Check the status codes when retry enabled.
      *
      * @param response the HttpServletResponse
      * @param context  the AuthenticationContext
@@ -242,6 +243,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      */
     private void checkStatusCode(HttpServletResponse response, AuthenticationContext context)
             throws AuthenticationFailedException {
+
         String redirectUrl = getErrorPage(context);
         try {
             if (Boolean.parseBoolean(String.valueOf(context.getProperty(DuoAuthenticatorConstants.NUMBER_MISMATCH)))) {
@@ -265,12 +267,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get DUO custom error page to handle exception
+     * Get DUO custom error page to handle exception.
      *
      * @param context authentication
      * @return redirect url
      */
     private String getErrorPage(AuthenticationContext context) {
+
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
         String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
@@ -279,29 +282,66 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get the mobile claim value of user
+     * Get the mobile claim value of user based on application.authentication.xml configuration.
      *
-     * @param username the username
+     * @param authenticationContext the Authentication Context
      * @return the mobile claim value
      * @throws AuthenticationFailedException
      */
-    private String getMobileClaimValue(String username) throws AuthenticationFailedException {
+    private String getMobileClaimValue(AuthenticationContext authenticationContext)
+            throws AuthenticationFailedException {
+
         String mobileNumber;
-        try {
-            int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
-            UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
-            String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
-            if (userRealm != null) {
-                UserStoreManager userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-                mobileNumber = userStoreManager.getUserClaimValue(tenantAwareUsername,
-                        DuoAuthenticatorConstants.MOBILE_CLAIM, null);
-            } else {
-                throw new AuthenticationFailedException(
-                        "Cannot find the user realm for the given tenant: " + tenantId);
+        String username;
+        String federatedMobileNumberAttributeKey;
+        AuthenticatedUser authenticatedUser;
+        Map<ClaimMapping, String> userAttributes;
+        Map<String, String> duoParameters;
+
+        authenticatedUser = (AuthenticatedUser) authenticationContext.getProperty("authenticatedUser");
+
+        if (authenticatedUser == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Authentication failed: Could not find the authenticated user. ");
             }
-        } catch (UserStoreException e) {
-            throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_STORE, e);
+            throw new AuthenticationFailedException
+                    ("Authentication failed: Cannot proceed further without identifying the user. ");
         }
+        username = authenticatedUser.getUserName();
+        duoParameters = FederatedAuthenticatorUtil.getAuthenticatorConfig(DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
+        if (duoParameters != null && duoParameters.get(DuoAuthenticatorConstants.USE_FEDERATED_MOBILE_CLAIM) != null
+                && Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.USE_FEDERATED_MOBILE_CLAIM))) {
+
+            userAttributes = authenticatedUser.getUserAttributes();
+            federatedMobileNumberAttributeKey = duoParameters
+                    .get(DuoAuthenticatorConstants.FEDERATED_MOBILE_ATTRIBUTE_KEY);
+
+            if (federatedMobileNumberAttributeKey == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Authentication failed: 'federatedMobileNumberAttributeKey' property is undefined");
+                }
+                throw new AuthenticationFailedException
+                        ("Authentication failed: 'federatedMobileNumberAttributeKey' property is undefined");
+            }
+            mobileNumber = getMobileNumberForFederatedUser(userAttributes, federatedMobileNumberAttributeKey);
+        } else {
+            try {
+                int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
+                UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
+                String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+                if (userRealm != null) {
+                    UserStoreManager userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
+                    mobileNumber = userStoreManager.getUserClaimValue(tenantAwareUsername,
+                            DuoAuthenticatorConstants.MOBILE_CLAIM, null);
+                } else {
+                    throw new AuthenticationFailedException(
+                            "Cannot find the user realm for the given tenant: " + tenantId);
+                }
+            } catch (UserStoreException e) {
+                throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_STORE, e);
+            }
+        }
+
         if (log.isDebugEnabled()) {
             log.debug("mobile number : " + mobileNumber);
         }
@@ -309,10 +349,33 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get the configuration properties of UI
+     * Extract the mobile number value from federated user attributes.
+     *
+     * @param userAttributes                    {@link Map} with federated user attributes
+     * @param federatedMobileNumberAttributeKey used to identify the mobile number value of federated authenticator
+     * @return the mobile number attribute
+     */
+    private String getMobileNumberForFederatedUser(Map<ClaimMapping, String> userAttributes,
+                                                   String federatedMobileNumberAttributeKey) {
+
+        String mobileNumber = null;
+        for (Map.Entry<ClaimMapping, String> entry : userAttributes.entrySet()) {
+            String key = String.valueOf(entry.getKey().getLocalClaim().getClaimUri());
+            String value = entry.getValue();
+            if (key.equals(federatedMobileNumberAttributeKey)) {
+                mobileNumber = String.valueOf(value);
+                break;
+            }
+        }
+        return mobileNumber;
+    }
+
+    /**
+     * Get the configuration properties of UI.
      */
     @Override
     public List<Property> getConfigurationProperties() {
+
         List<Property> configProperties = new ArrayList<>();
 
         Property duoHost = new Property();
@@ -379,6 +442,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     @Override
     protected void processAuthenticationResponse(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context) throws AuthenticationFailedException {
+
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
         try {
@@ -409,21 +473,25 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
     @Override
     public String getContextIdentifier(HttpServletRequest request) {
+
         return request.getParameter(DuoAuthenticatorConstants.SESSION_DATA_KEY);
     }
 
     @Override
     public String getName() {
+
         return DuoAuthenticatorConstants.AUTHENTICATOR_NAME;
     }
 
     @Override
     public String getFriendlyName() {
+
         return DuoAuthenticatorConstants.AUTHENTICATOR_FRIENDLY_NAME;
     }
 
     @Override
     protected boolean retryAuthenticationEnabled() {
+
         return true;
     }
 }

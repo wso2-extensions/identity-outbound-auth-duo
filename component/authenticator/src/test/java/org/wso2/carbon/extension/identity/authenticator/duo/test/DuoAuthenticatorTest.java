@@ -38,6 +38,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
+import org.wso2.carbon.extension.identity.helper.FederatedAuthenticatorUtil;
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.AuthenticatorConfig;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.SequenceConfig;
@@ -61,6 +62,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -75,8 +77,9 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
-        IdentityUtil.class, DuoHttp.class, OkHttpClient.class,Request.class,Response.class})
+        IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class, FederatedAuthenticatorUtil.class})
 public class DuoAuthenticatorTest {
+
     private DuoAuthenticator duoAuthenticator;
 
     @Spy
@@ -114,45 +117,53 @@ public class DuoAuthenticatorTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
+
         duoAuthenticator = new DuoAuthenticator();
         initMocks(this);
     }
 
     @AfterMethod
     public void tearDown() throws Exception {
+
     }
 
     @Test(description = "Test case for canHandle() method true case.")
     public void testCanHandleTrue() {
+
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn("response");
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), true);
     }
 
     @Test(description = "Test case for canHandle() method false case.")
     public void testCanHandleFalse() {
+
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn(null);
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), false);
     }
 
     @Test(description = "Test case for getFriendlyName() method.")
     public void testGetFriendlyName() {
+
         Assert.assertEquals(duoAuthenticator.getFriendlyName(),
                 DuoAuthenticatorConstants.AUTHENTICATOR_FRIENDLY_NAME);
     }
 
     @Test(description = "Test case for getName() method.")
     public void testGetName() {
+
         Assert.assertEquals(duoAuthenticator.getName(),
                 DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
     }
 
     @Test(description = "Test case for retryAuthenticationEnabled() method.")
     public void testRetryAuthenticationEnabled() throws Exception {
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"retryAuthenticationEnabled"),true);
+
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "retryAuthenticationEnabled"), true);
     }
 
     @Test(description = "Test case for getContextIdentifier() method.")
     public void testGetContextIdentifier() {
+
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SESSION_DATA_KEY)).thenReturn("abc");
         Assert.assertEquals(duoAuthenticator.getContextIdentifier(httpServletRequest),
                 "abc");
@@ -160,6 +171,7 @@ public class DuoAuthenticatorTest {
 
     @Test(description = "Test case for getLocalAuthenticatedUser() method.")
     public void testGetLocalAuthenticatedUser() throws Exception {
+
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.size()).thenReturn(2);
@@ -168,28 +180,34 @@ public class DuoAuthenticatorTest {
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
         when(stepConfig.getAuthenticatedUser()).thenReturn(user);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getLocalAuthenticatedUser",context),
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getLocalAuthenticatedUser", context),
                 "admin@carbon.super");
     }
 
     @Test(description = "Test case for getMobileClaimValue() method.")
     public void testGetMobileClaimValue() throws Exception {
+
         mockStatic(IdentityTenantUtil.class);
         mockStatic(DuoAuthenticatorServiceComponent.class);
+        mockStatic(FederatedAuthenticatorUtil.class);
         when(IdentityTenantUtil.getTenantIdOfUser(anyString())).thenReturn(-1234);
         when(DuoAuthenticatorServiceComponent.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
+        when((AuthenticatedUser) context.getProperty("authenticatedUser")).thenReturn(authenticatedUser);
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
                         DuoAuthenticatorConstants.MOBILE_CLAIM, null)).thenReturn("0771234565");
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"getMobileClaimValue","admin"),
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getMobileClaimValue", context),
                 "0771234565");
     }
 
-    @Test(expectedExceptions = {AuthenticationFailedException.class},description = "Test case for getMobileClaimValue" +
+    @Test(expectedExceptions = {AuthenticationFailedException.class}, description = "Test case for getMobileClaimValue" +
             "() method with exception")
     public void testGetMobileClaimValueWithException() throws Exception {
+
         mockStatic(IdentityTenantUtil.class);
         mockStatic(DuoAuthenticatorServiceComponent.class);
         when(IdentityTenantUtil.getTenantIdOfUser(anyString())).thenReturn(0);
@@ -199,59 +217,64 @@ public class DuoAuthenticatorTest {
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
                         DuoAuthenticatorConstants.MOBILE_CLAIM, null)).thenReturn("0771234565");
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"getMobileClaimValue","admin"),
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getMobileClaimValue", context),
                 "Cannot find the user realm for the given tenant: 0");
     }
 
     @Test(description = "Test case for checkStatusCode() with number mis match")
     public void testCheckStatusCodeWithNumberMismatch() throws Exception {
+
         mockStatic(FrameworkUtils.class);
         mockStatic(IdentityUtil.class);
-        context.setProperty(DuoAuthenticatorConstants.NUMBER_MISMATCH,true);
+        context.setProperty(DuoAuthenticatorConstants.NUMBER_MISMATCH, true);
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn
                 (null);
-        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_ERROR_PAGE,false,
+        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_ERROR_PAGE, false,
                 false)).thenReturn(DuoAuthenticatorConstants.DUO_ERROR_PAGE);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Whitebox.invokeMethod(duoAuthenticator, "checkStatusCode",httpServletResponse, context);
+        Whitebox.invokeMethod(duoAuthenticator, "checkStatusCode", httpServletResponse, context);
         verify(httpServletResponse).sendRedirect(captor.capture());
         Assert.assertTrue(captor.getValue().contains(DuoAuthenticatorConstants.DuoErrors.ERROR_NUMBER_MISMATCH));
     }
 
     @Test(description = "Test case for getErrorPage() method")
     public void testGetErrorPage() throws Exception {
+
         mockStatic(FrameworkUtils.class);
         mockStatic(IdentityUtil.class);
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn
                 (null);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"getErrorPage",context),
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getErrorPage", context),
                 null);
     }
 
     @Test(description = "Test case for isValidPhoneNumber() method")
     public void testIsValidPhoneNumber() throws Exception {
+
         JSONObject jo = new JSONObject();
-        jo.put("number","0771234567");
+        jo.put("number", "0771234567");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"isValidPhoneNumber",
-                context,jsonArray ,"0771234567"),true);
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567"), true);
     }
 
     @Test(description = "Test case for isValidPhoneNumber() method false")
     public void testIsValidPhoneNumberWithFalse() throws Exception {
+
         JSONObject jo = new JSONObject();
-        jo.put("number","");
+        jo.put("number", "");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator,"isValidPhoneNumber",
-                context,jsonArray ,"0771234567"), false );
+        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567"), false);
     }
 
     @Test(description = "Test case for getConfigurationProperties() method.")
     public void testGetConfigurationProperties() {
+
         List<Property> configProperties = new ArrayList<Property>();
         Property duoHost = new Property();
         configProperties.add(duoHost);
@@ -272,6 +295,7 @@ public class DuoAuthenticatorTest {
 
     @ObjectFactory
     public IObjectFactory getObjectFactory() {
+
         return new PowerMockObjectFactory();
     }
 }

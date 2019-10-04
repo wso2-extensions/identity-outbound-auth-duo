@@ -29,7 +29,6 @@ import org.json.JSONObject;
 import org.wso2.carbon.extension.identity.helper.FederatedAuthenticatorUtil;
 import org.wso2.carbon.identity.application.authentication.framework.AbstractApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
-import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
@@ -276,7 +275,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         Map<ClaimMapping, String> userAttributes;
         Map<String, String> duoParameters;
 
-        authenticatedUser = (AuthenticatedUser) authenticationContext.getProperty("authenticatedUser");
+        authenticatedUser = (AuthenticatedUser) authenticationContext.getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
 
         if (authenticatedUser == null) {
             if (log.isDebugEnabled()) {
@@ -287,8 +286,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         }
         username = authenticatedUser.getUserName();
         duoParameters = FederatedAuthenticatorUtil.getAuthenticatorConfig(DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
-        if (duoParameters != null && duoParameters.get(DuoAuthenticatorConstants.USE_FEDERATED_MOBILE_CLAIM) != null
-                && Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.USE_FEDERATED_MOBILE_CLAIM))) {
+        if (duoParameters != null && duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE) != null
+                && Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE))) {
 
             userAttributes = authenticatedUser.getUserAttributes();
             federatedMobileNumberAttributeKey = duoParameters

@@ -27,6 +27,7 @@ public abstract class DuoAuthenticatorConstants {
 
     public static final String AUTHENTICATOR_NAME = "DuoAuthenticator";
     public static final String AUTHENTICATION = "authentication";
+    public static final String AUTHENTICATED_USER = "authenticatedUser";
     public static final String AUTHENTICATOR_FRIENDLY_NAME = "duo";
     public static final String INTEGRATION_KEY = "IntegrationKey";
     public static final String SECRET_KEY = "SecretKey";
@@ -55,7 +56,7 @@ public abstract class DuoAuthenticatorConstants {
     public static final String USER_INFO = "userInfo";
     public static final String USER_STORE_DOMAIN = "UserStoreDomain";
     public static final String TENANT_DOMAIN = "TenantDomain";
-    public static final String USE_FEDERATED_MOBILE_CLAIM = "useFederatedMobileClaim";
+    public static final String SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE = "sendDuoToFederatedMobileAttribute";
     public static final String FEDERATED_MOBILE_ATTRIBUTE_KEY = "federatedMobileNumberAttributeKey";
 
     public static class RequestParams {

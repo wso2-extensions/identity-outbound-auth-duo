@@ -275,7 +275,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         Map<ClaimMapping, String> userAttributes;
         Map<String, String> duoParameters;
 
-        authenticatedUser = (AuthenticatedUser) authenticationContext.getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
+        authenticatedUser = (AuthenticatedUser) authenticationContext
+                .getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
 
         if (authenticatedUser == null) {
             if (log.isDebugEnabled()) {
@@ -286,8 +287,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         }
         username = authenticatedUser.getUserName();
         duoParameters = FederatedAuthenticatorUtil.getAuthenticatorConfig(DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
-        if (duoParameters != null && duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE) != null
-                && Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE))) {
+        if (duoParameters != null
+                && duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE) != null
+                && Boolean.parseBoolean(
+                duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE))) {
 
             userAttributes = authenticatedUser.getUserAttributes();
             federatedMobileNumberAttributeKey = duoParameters

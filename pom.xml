@@ -16,7 +16,8 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
 	 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wso2</groupId>
@@ -134,6 +135,12 @@
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
             <version>${carbon.identity.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.extension.identity.authenticator.utils</groupId>
+            <artifactId>org.wso2.carbon.extension.identity.helper</artifactId>
+            <version>${identity.extension.utils}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -399,5 +406,7 @@
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.7.9</jacoco.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+        <identity.extension.utils>1.0.8</identity.extension.utils>
+        <identity.extension.utils.import.version.range>[1.0.8,2.0.0)</identity.extension.utils.import.version.range>
     </properties>
 </project>

@@ -53,6 +53,84 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
         <Parameter name="EnableMobileVerification">true</Parameter>
    </AuthenticatorConfig>
     ````
+    
+5.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured in the `application-authentication.xml` file in the `<IS_HOME>/repository/conf/identity` directory.
+
+```
+<AuthenticatorConfigs>
+     ...
+     <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
+          ...
+          <Parameter name="usecase">association</Parameter>
+          <Parameter name="sendDuoToFederatedMobileAttribute">true</Parameter>
+          <Parameter name="federatedMobileNumberAttributeKey">http://wso2.org/claims/mobile</Parameter>
+          <Parameter name="secondaryUserstore">primary</Parameter>
+          ...
+     </AuthenticatorConfig>
+     ...
+</AuthenticatorConfigs>
+```
+
+- `sendDuoToFederatedMobileAttribute` - This specifies whether the mobile number claim should be taken from the claims provided by the Identity Provider.
+- `federatedMobileNumberAttributeKey` - This specifies the value of the mobile claim provided by the Identity Provider. This property must be configured if the `useFederatedMobileClaim` is `true`.
+- `usecase` - This field can take one of the following values: local, association, userAttribute, subjectUri. If you do not specify any usecase, the default value is local.
+- `secondaryUserstore` - The user store configuration is maintained per tenant as comma separated values. For example, <Parameter name="secondaryUserstore">jdbc, abc, and xyz</Parameter>.
+
+    The usecase value can be `local`, `association`,
+    `             userAttribute            ` or
+    `             subjectUri            ` .
+
+    <table>
+    <tbody>
+    <tr class="odd">
+    <td><code>                 local                </code></td>
+    <td><p>This is based on the federated username. This is the default value. You must set the federated username in the localuserstore. Basically, the federated username must be the same as the local username.</p></td>
+    </tr>
+    <tr class="even">
+    <td><code>                 association                </code></td>
+    <td><p>The federated username must be associated with the local account in advance in the Dashboard. So the local username is retrieved from the association. To associate the user, log into the <a href="../../learn/using-the-end-user-dashboard">end user dashboard</a> and go to <strong>Associated Account</strong> by clicking <strong>View details</strong> .</p></td>
+    </tr>
+    <tr class="odd">
+    <td><code>                 userAttribute                </code></td>
+    <td><div class="content-wrapper">
+    <p>The name of the  federatedauthenticator's user attribute. That is,the local user namewhich is contained in a federated user's attribute. When using this, add the following parameter under the <code>                   &lt;AuthenticatorConfig name="Duo" enabled="true"&gt;                  </code> section in the <code>                   &lt;IS_HOME&gt;/repository/conf/identity/application-authentication.xml                  </code> file and put the value (e.g., email, screen_name, id, etc.).</p>
+    <div class="code panel pdl" style="border-width: 1px;">
+    <div class="codeContent panelContent pdl">
+    <div class="sourceCode" id="cb1" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;userAttribute&quot;</span><span class="kw">&gt;</span>email<span class="kw">&lt;/Parameter&gt;</span></a></code></pre></div>
+    </div>
+    </div>
+    <p>If you use, OpenID Connect supported authenticators such as LinkedIn, Foursquare, etc., or in the case of multiple social login options as the first step and Duo as second step, you need to add similar configuration for the specific authenticator in the <code>                   &lt;IS_HOME&gt;/repository/conf/identity/application-authentication.xml                  </code> file under the &lt; <code>                   AuthenticatorConfigs                  </code> &gt; section as follows (the following shows the configuration forFoursquare,LinkedIn and Facebook authenticator respectively).</p>
+    <p>Inside the <code>                   AuthenticatorConfig                  </code> (i.e., Foursquare), add the specific <code>                   userAttribute                  </code> with a prefix of the (current step) authenticator name (i.e., Duo-userAttribute).</p>
+    <div class="code panel pdl" style="border-width: 1px;">
+    <div class="codeContent panelContent pdl">
+    <div class="sourceCode" id="cb2" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;Foursquare&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
+    <a class="sourceLine" id="cb2-2" title="2">       <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>http://wso2.org/foursquare/claims/email<span class="kw">&lt;/Parameter&gt;</span></a>
+    <a class="sourceLine" id="cb2-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
+    </div>
+    </div>
+    <div class="code panel pdl" style="border-width: 1px;">
+    <div class="codeContent panelContent pdl">
+    <div class="sourceCode" id="cb3" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;LinkedIn&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
+    <a class="sourceLine" id="cb3-2" title="2">   <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>http://wso2.org/linkedin/claims/emailAddress<span class="kw">&lt;/Parameter&gt;</span></a>
+    <a class="sourceLine" id="cb3-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
+    </div>
+    </div>
+    <div class="code panel pdl" style="border-width: 1px;">
+    <div class="codeContent panelContent pdl">
+    <div class="sourceCode" id="cb4" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;FacebookAuthenticator&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
+    <a class="sourceLine" id="cb4-2" title="2">    <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>email<span class="kw">&lt;/Parameter&gt;</span></a>
+    <a class="sourceLine" id="cb4-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
+    </div>
+    </div>
+    <p>Likewise, you can add the AuthenticatorConfig forAmazon,Google,Twitterand Instagram with relevant values.</p>
+    </div></td>
+    </tr>
+    <tr class="even">
+    <td><code>                 subjectUri                </code></td>
+    <td><p>When configuring the federated authenticator, select the attribute in the subject identifier under the service provider section in UI, this is used as the username of the Duo authenticator.</p></td>
+    </tr>
+    </tbody>
+    </table>
     ```
     Duo Security mainly uses Mobile Phone two-factor authentication to ensure secure login.
     ```

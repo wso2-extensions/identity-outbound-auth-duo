@@ -52,7 +52,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
    <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
         <Parameter name="EnableMobileVerification">true</Parameter>
    </AuthenticatorConfig>
-    ````
+    ```
     
 5.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured in the `application-authentication.xml` file in the `<IS_HOME>/repository/conf/identity` directory.
 
@@ -131,6 +131,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     </tr>
     </tbody>
     </table>
+    
     ```
     Duo Security mainly uses Mobile Phone two-factor authentication to ensure secure login.
     ```

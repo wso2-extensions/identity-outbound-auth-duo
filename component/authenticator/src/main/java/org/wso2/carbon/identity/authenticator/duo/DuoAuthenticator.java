@@ -19,7 +19,6 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
-import org.apache.catalina.util.URLEncoder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +45,8 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -75,7 +76,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         String username;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
-        URLEncoder encoder = new URLEncoder();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
@@ -88,21 +88,24 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         if (context.isRetrying()) {
             checkStatusCode(response, context);
         } else if (StringUtils.isNotEmpty(username)) {
-            String signRequest = DuoWeb.signRequest(authenticatorProperties.get
-                    (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
-                    (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
-            String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?"
-                    + FrameworkConstants.RequestParams.AUTHENTICATOR +
-                    "=" + encoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME) + "&" +
-                    FrameworkConstants.RequestParams.TYPE + "=" +
-                    DuoAuthenticatorConstants.RequestParams.DUO + "&" +
-                    DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
-                    encoder.encode(signRequest) + "&" + FrameworkConstants.SESSION_DATA_KEY + "=" +
-                    context.getContextIdentifier() + "&" +
-                    DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
-                    encoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST));
-            String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
             try {
+                String signRequest = DuoWeb.signRequest(authenticatorProperties.get
+                        (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
+                        (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
+                String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?"
+                        + FrameworkConstants.RequestParams.AUTHENTICATOR +
+                        "=" + URLEncoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME,
+                        StandardCharsets.UTF_8.toString()) +
+                        "&" + FrameworkConstants.RequestParams.TYPE + "=" +
+                        DuoAuthenticatorConstants.RequestParams.DUO + "&" +
+                        DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
+                        URLEncoder.encode(signRequest, StandardCharsets.UTF_8.toString()) + "&" +
+                        FrameworkConstants.SESSION_DATA_KEY + "=" +
+                        context.getContextIdentifier() + "&" +
+                        DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
+                        URLEncoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST),
+                                StandardCharsets.UTF_8.toString());
+                String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
                 response.sendRedirect(duoUrl);
             } catch (IOException e) {
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);

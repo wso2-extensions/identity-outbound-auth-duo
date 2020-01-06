@@ -27,7 +27,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import java.util.Hashtable;
 
 /**
- * @scr.component name="identity.application.authenticator.basicauth.component" immediate="true"
+ * @scr.component name="identity.application.authenticator.duo" immediate="true"
  * @scr.reference name="realm.service"
  * interface="org.wso2.carbon.user.core.service.RealmService"cardinality="1..1"
  * policy="dynamic" bind="setRealmService" unbind="unsetRealmService"
@@ -40,13 +40,13 @@ public class DuoAuthenticatorServiceComponent {
     protected void activate(ComponentContext ctxt) {
         try {
             DuoAuthenticator authenticator = new DuoAuthenticator();
-            Hashtable<String, String> props = new Hashtable<String, String>();
+            Hashtable<String, String> props = new Hashtable<>();
             ctxt.getBundleContext().registerService(ApplicationAuthenticator.class.getName(),
                     authenticator, props);
             if (log.isDebugEnabled()) {
                 log.debug("DuoAuthenticator bundle is activated");
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             log.fatal("Error while activating the DUO authenticator ", e);
         }
     }

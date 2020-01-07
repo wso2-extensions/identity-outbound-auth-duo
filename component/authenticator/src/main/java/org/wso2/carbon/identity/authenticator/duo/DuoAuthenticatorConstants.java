@@ -21,7 +21,7 @@ package org.wso2.carbon.identity.authenticator.duo;
 import java.util.Random;
 
 /**
- * Constants used by the DuoAuthenticator
+ * Constants used by the DuoAuthenticator.
  */
 public abstract class DuoAuthenticatorConstants {
 
@@ -59,16 +59,23 @@ public abstract class DuoAuthenticatorConstants {
     public static final String SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE = "sendDuoToFederatedMobileAttribute";
     public static final String FEDERATED_MOBILE_ATTRIBUTE_KEY = "federatedMobileNumberAttributeKey";
 
+    /**
+     * Request Params.
+     */
     public static class RequestParams {
         public static final String DUO = "duo";
         public static final String SIG_REQUEST = "signreq";
         public static final String DUO_HOST = "duoHost";
     }
 
+    /**
+     * Duo errors.
+     */
     public static class DuoErrors {
         public static final String ERROR_USER_NOT_REGISTERED = "&authFailure=true&authFailureMsg=user.not.registered";
         public static final String ERROR_GETTING_VERIFIED_USER = "&authFailure=true&authFailureMsg=user.not.found";
-        public static final String ERROR_GETTING_NUMBER_FROM_DUO = "&authFailure=true&authFailureMsg=unable.to.get.duo.mobileNumber";
+        public static final String ERROR_GETTING_NUMBER_FROM_DUO = "&authFailure=true&authFailureMsg=unable.to.get" +
+                ".duo.mobileNumber";
         public static final String ERROR_NUMBER_NOT_FOUND = "&authFailure=true&authFailureMsg=unable.to.find.number";
         public static final String ERROR_NUMBER_MISMATCH = "&authFailure=true&authFailureMsg=number.mismatch";
 
@@ -82,7 +89,7 @@ public abstract class DuoAuthenticatorConstants {
     }
 
     /**
-     * Generate integrationSecretKey for Duo Authentication
+     * Generate integrationSecretKey for Duo Authentication.
      */
     public static String stringGenerator() {
         StringBuilder sb = new StringBuilder(42);

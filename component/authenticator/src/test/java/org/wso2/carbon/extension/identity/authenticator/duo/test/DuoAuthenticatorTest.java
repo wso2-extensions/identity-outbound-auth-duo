@@ -21,9 +21,8 @@ package org.wso2.carbon.extension.identity.authenticator.duo.test;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -52,6 +51,7 @@ import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticator;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticatorConstants;
 import org.wso2.carbon.identity.authenticator.duo.DuoHttp;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
+import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.core.UserRealm;
@@ -59,25 +59,26 @@ import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.*;
-
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
- * Test case for Mobile based 2nd factor Local Authenticator
+ * Test case for Mobile based 2nd factor Local Authenticator.
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
-        IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class, FederatedAuthenticatorUtil.class})
+        IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class,
+        FederatedAuthenticatorUtil.class, DuoServiceHolder.class})
 public class DuoAuthenticatorTest {
 
     private DuoAuthenticator duoAuthenticator;
@@ -115,11 +116,16 @@ public class DuoAuthenticatorTest {
     @Mock
     private HttpServletResponse httpServletResponse;
 
+    @Mock
+    private DuoServiceHolder serviceHolder;
+
     @BeforeMethod
     public void setUp() throws Exception {
 
         duoAuthenticator = new DuoAuthenticator();
         initMocks(this);
+        mockStatic(DuoServiceHolder.class);
+        when(DuoServiceHolder.getInstance()).thenReturn(serviceHolder);
     }
 
     @AfterMethod
@@ -176,7 +182,7 @@ public class DuoAuthenticatorTest {
         mockStatic(DuoAuthenticatorServiceComponent.class);
         mockStatic(FederatedAuthenticatorUtil.class);
         when(IdentityTenantUtil.getTenantIdOfUser(anyString())).thenReturn(-1234);
-        when(DuoAuthenticatorServiceComponent.getRealmService()).thenReturn(realmService);
+        when(serviceHolder.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
@@ -189,14 +195,14 @@ public class DuoAuthenticatorTest {
                 "0771234565");
     }
 
-    @Test(expectedExceptions = {AuthenticationFailedException.class}, description = "Test case for getMobileClaimValue" +
-            "() method with exception")
+    @Test(expectedExceptions = {AuthenticationFailedException.class}, description = "Test case for " +
+            "getMobileClaimValue() method with exception")
     public void testGetMobileClaimValueWithException() throws Exception {
 
         mockStatic(IdentityTenantUtil.class);
         mockStatic(DuoAuthenticatorServiceComponent.class);
         when(IdentityTenantUtil.getTenantIdOfUser(anyString())).thenReturn(0);
-        when(DuoAuthenticatorServiceComponent.getRealmService()).thenReturn(realmService);
+        when(serviceHolder.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         when(userRealm.getUserStoreManager()
@@ -231,8 +237,7 @@ public class DuoAuthenticatorTest {
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn
                 (null);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "getErrorPage", context),
-                null);
+        Assert.assertNull(Whitebox.invokeMethod(duoAuthenticator, "getErrorPage", context));
     }
 
     @Test(description = "Test case for isValidPhoneNumber() method")

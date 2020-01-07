@@ -28,14 +28,16 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.identity.authenticator.duo.DuoUtil;
 
 import java.nio.charset.Charset;
+
 import static org.mockito.MockitoAnnotations.initMocks;
 
-
+/**
+ * DuoUtilTest.
+ */
 public class DuoUtilTest {
-    private DuoUtil duoUtil;
+
     @BeforeMethod
     public void setUp() throws Exception {
-        duoUtil = new DuoUtil();
         initMocks(this);
     }
 
@@ -50,20 +52,20 @@ public class DuoUtilTest {
 
     @Test(description = "Test case for hmacSign() method.")
     public void testHmacSign() throws Exception {
-        Assert.assertEquals(DuoUtil.hmacSign("10","data"),"1dcb5e97a5b7fc5331d85b68e011de62b900d28f");
+        Assert.assertEquals(DuoUtil.hmacSign("10", "data"), "1dcb5e97a5b7fc5331d85b68e011de62b900d28f");
     }
 
     @Test(description = "Test case for hmacSha1() method.")
     public void testHmacSha1() throws Exception {
         String input = "Hello World";
         byte[] bytes = input.getBytes(Charset.forName("UTF-8"));
-        Assert.assertNotNull(DuoUtil.hmacSha1(bytes,bytes));
+        Assert.assertNotNull(DuoUtil.hmacSha1(bytes, bytes));
     }
 
     @Test(description = "Test case for bytesToHex() method.")
     public void testBytesToHex() throws Exception {
         String input = "Hello World";
         byte[] bytes = input.getBytes(Charset.forName("UTF-8"));
-        Assert.assertEquals(DuoUtil.bytesToHex(bytes),"48656c6c6f20576f726c64");
+        Assert.assertEquals(DuoUtil.bytesToHex(bytes), "48656c6c6f20576f726c64");
     }
 }

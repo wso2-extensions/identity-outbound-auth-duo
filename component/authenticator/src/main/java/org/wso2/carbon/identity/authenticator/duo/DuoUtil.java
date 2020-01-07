@@ -18,22 +18,27 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * Duo Utils.
+ */
 public class DuoUtil {
     public static String hmacSign(String skey, String data)
             throws NoSuchAlgorithmException, InvalidKeyException {
-        SecretKeySpec key = new SecretKeySpec(skey.getBytes(), "HmacSHA1");
+        SecretKeySpec key = new SecretKeySpec(skey.getBytes(StandardCharsets.UTF_8), "HmacSHA1");
         Mac mac = Mac.getInstance("HmacSHA1");
         mac.init(key);
-        byte[] raw = mac.doFinal(data.getBytes());
+        byte[] raw = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
         return bytesToHex(raw);
     }
 
-    public static byte[] hmacSha1(byte[] key_bytes, byte[] text_bytes)
+    public static byte[] hmacSha1(byte[] keyBytes, byte[] textBytes)
             throws NoSuchAlgorithmException, InvalidKeyException {
         Mac hmacSha1;
         try {
@@ -41,27 +46,29 @@ public class DuoUtil {
         } catch (NoSuchAlgorithmException nsae) {
             hmacSha1 = Mac.getInstance("HMAC-SHA-1");
         }
-        SecretKeySpec macKey = new SecretKeySpec(key_bytes, "RAW");
+        SecretKeySpec macKey = new SecretKeySpec(keyBytes, "RAW");
         hmacSha1.init(macKey);
-        return hmacSha1.doFinal(text_bytes);
+        return hmacSha1.doFinal(textBytes);
     }
 
     public static String bytesToHex(byte[] b) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for (byte aB : b) {
-            result += Integer.toString((aB & 0xff) + 0x100, 16).substring(1);
+            result.append(Integer.toString((aB & 0xff) + 0x100, 16).substring(1));
         }
-        return result;
+        return result.toString();
     }
 
     static String join(Object[] s, String glue) {
         int k = s.length;
-        if (k == 0)
+        if (k == 0) {
             return "";
+        }
         StringBuilder out = new StringBuilder();
         out.append(s[0]);
-        for (int x = 1; x < k; ++x)
+        for (int x = 1; x < k; ++x) {
             out.append(glue).append(s[x]);
+        }
         return out.toString();
     }
 }

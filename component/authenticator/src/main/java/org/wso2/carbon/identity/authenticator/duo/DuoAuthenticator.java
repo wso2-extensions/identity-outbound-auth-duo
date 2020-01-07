@@ -35,7 +35,7 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.Property;
-import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
+import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
@@ -52,6 +52,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -310,7 +311,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else {
             try {
                 int tenantId = IdentityTenantUtil.getTenantIdOfUser(username);
-                UserRealm userRealm = DuoAuthenticatorServiceComponent.getRealmService().getTenantUserRealm(tenantId);
+                UserRealm userRealm = DuoServiceHolder.getInstance().getRealmService().getTenantUserRealm(tenantId);
                 String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
                 if (userRealm != null) {
                     UserStoreManager userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();

@@ -18,17 +18,35 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * DuoHttp class.
+ */
 public class DuoHttp {
     private String method;
     private String host;
@@ -38,23 +56,22 @@ public class DuoHttp {
     private Proxy proxy;
     private int timeout = 60;
 
-    public static SimpleDateFormat RFC_2822_DATE_FORMAT
-            = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z",
-            Locale.US);
+    public static final FastDateFormat RFC_2822_DATE_FORMAT
+            = FastDateFormat.getInstance("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
 
-    public static MediaType FORM_ENCODED = MediaType.parse("application/x-www-form-urlencoded");
+    public static final MediaType FORM_ENCODED = MediaType.parse("application/x-www-form-urlencoded");
 
-    public DuoHttp(String in_method, String in_host, String in_uri) {
-        method = in_method.toUpperCase();
-        host = in_host;
-        uri = in_uri;
+    public DuoHttp(String inMethod, String inHost, String inUri) {
+        method = inMethod.toUpperCase(Locale.ENGLISH);
+        host = inHost;
+        uri = inUri;
         headers = new Headers.Builder();
         headers.add("Host", host);
         proxy = null;
     }
 
-    public DuoHttp(String in_method, String in_host, String in_uri, int timeout) {
-        this(in_method, in_host, in_uri);
+    public DuoHttp(String inMethod, String inHost, String inUri, int timeout) {
+        this(inMethod, inHost, inUri);
         this.timeout = timeout;
     }
 
@@ -83,16 +100,15 @@ public class DuoHttp {
             if (queryString.length() > 0) {
                 url += "?" + queryString;
             }
-            builder.get();
+            builder.url(url).get();
         } else if (method.equals("DELETE")) {
             if (queryString.length() > 0) {
                 url += "?" + queryString;
             }
-            builder.delete();
+            builder.url(url).delete();
         } else {
             throw new UnsupportedOperationException("Unsupported method: " + method);
         }
-        Request request = builder.url(url).build();
         // Set up client.
         OkHttpClient httpclient = new OkHttpClient();
         if (proxy != null) {
@@ -110,25 +126,26 @@ public class DuoHttp {
         signRequest(ikey, skey, 2);
     }
 
-    public void signRequest(String ikey, String skey, int sig_version) throws UnsupportedEncodingException {
+    public void signRequest(String ikey, String skey, int sigVersion) throws UnsupportedEncodingException {
         String date = formatDate(new Date());
-        String canon = canonRequest(date, sig_version);
+        String canon = canonRequest(date, sigVersion);
         String sig = signHMAC(skey, canon);
         String auth = ikey + ":" + sig;
-        String header = "Basic " + DuoBase64.encodeBytes(auth.getBytes());
+        String header = "Basic " + DuoBase64.encodeBytes(auth.getBytes(StandardCharsets.UTF_8));
         addHeader("Authorization", header);
-        if (sig_version == 2) {
+        if (sigVersion == 2) {
             addHeader("Date", date);
         }
     }
 
     protected String signHMAC(String skey, String msg) {
         try {
-            byte[] sig_bytes = DuoUtil.hmacSha1(skey.getBytes(), msg.getBytes());
-            String sig = DuoUtil.bytesToHex(sig_bytes);
+            byte[] sigBytes = DuoUtil.hmacSha1(skey.getBytes(StandardCharsets.UTF_8),
+                    msg.getBytes(StandardCharsets.UTF_8));
+            String sig = DuoUtil.bytesToHex(sigBytes);
             return sig;
-        } catch (Exception e) {
-            return "";
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            return StringUtils.EMPTY;
         }
     }
 
@@ -150,14 +167,14 @@ public class DuoHttp {
         proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
     }
 
-    protected String canonRequest(String date, int sig_version)
+    protected String canonRequest(String date, int sigVersion)
             throws UnsupportedEncodingException {
         String canon = "";
-        if (sig_version == 2) {
+        if (sigVersion == 2) {
             canon += date + "\n";
         }
-        canon += method.toUpperCase() + "\n";
-        canon += host.toLowerCase() + "\n";
+        canon += method.toUpperCase(Locale.ENGLISH) + "\n";
+        canon += host.toLowerCase(Locale.ENGLISH) + "\n";
         canon += uri + "\n";
         canon += createQueryString();
         return canon;
@@ -165,16 +182,14 @@ public class DuoHttp {
 
     private String createQueryString()
             throws UnsupportedEncodingException {
-        ArrayList<String> args = new ArrayList<String>();
-        ArrayList<String> keys = new ArrayList<String>();
-
-        for (String key : params.keySet()) {
-            keys.add(key);
-        }
+        List<String> args = new ArrayList<>();
+        List<String> keys = new ArrayList<>(params.keySet());
         Collections.sort(keys);
         for (String key : keys) {
             String name = URLEncoder.encode(key, "UTF-8").replace("+", "%20").replace("*", "%2A").replace("%7E", "~");
-            String value = URLEncoder.encode(params.get(key), "UTF-8").replace("+", "%20").replace("*", "%2A").replace("%7E", "~");
+            String value =
+                    URLEncoder.encode(params.get(key), "UTF-8").replace("+", "%20").replace("*", "%2A").replace("%7E"
+                            , "~");
             args.add(name + "=" + value);
         }
         return DuoUtil.join(args.toArray(), "&");

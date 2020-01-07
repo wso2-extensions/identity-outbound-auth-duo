@@ -18,36 +18,42 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Base64 Utilities for Duo authenticator.
+ */
 public class DuoBase64 {
     /**
      * No options specified. Value is zero.
      */
-    public final static int NO_OPTIONS = 0;
+    public static final int NO_OPTIONS = 0;
 
     /**
      * Specify encoding in first bit. Value is one.
      */
-    public final static int ENCODE = 1;
+    public static final int ENCODE = 1;
 
     /**
      * Specify decoding in first bit. Value is zero.
      */
-    public final static int DECODE = 0;
+    public static final int DECODE = 0;
 
     /**
      * Specify that data should be gzip-compressed in second bit. Value is two.
      */
-    public final static int GZIP = 2;
+    public static final int GZIP = 2;
 
     /**
      * Specify that gzipped data should <em>not</em> be automatically gunzipped.
      */
-    public final static int DONT_GUNZIP = 4;
+    public static final int DONT_GUNZIP = 4;
 
     /**
      * Do break lines when encoding. Value is 8.
      */
-    public final static int DO_BREAK_LINES = 8;
+    public static final int DO_BREAK_LINES = 8;
 
     /**
      * Encode using Base64-like encoding that is URL- and Filename-safe as
@@ -58,42 +64,42 @@ public class DuoBase64 {
      * very least should not be called Base64 without also specifying that is
      * was encoded using the URL- and Filename-safe dialect.
      */
-    public final static int URL_SAFE = 16;
+    public static final int URL_SAFE = 16;
 
     /**
      * Encode using the special "ordered" dialect of Base64 described here: <a
      * href="http://www.faqs.org/qa/rfcc-1940.html">http://www.faqs.org/qa/rfcc-
      * 1940.html</a>.
      */
-    public final static int ORDERED = 32;
+    public static final int ORDERED = 32;
 
     /**
      * Maximum line length (76) of Base64 output.
      */
-    private final static int MAX_LINE_LENGTH = 76;
+    private static final int MAX_LINE_LENGTH = 76;
 
     /**
      * The equals sign (=) as a byte.
      */
-    private final static byte EQUALS_SIGN = (byte) '=';
+    private static final byte EQUALS_SIGN = (byte) '=';
 
     /**
      * The new line character (\n) as a byte.
      */
-    private final static byte NEW_LINE = (byte) '\n';
+    private static final byte NEW_LINE = (byte) '\n';
 
     /**
      * Preferred encoding.
      */
-    private final static String PREFERRED_ENCODING = "US-ASCII";
+    private static final String PREFERRED_ENCODING = "US-ASCII";
 
-    private final static byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
-    private final static byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
+    private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
+    private static final byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
 
     /**
      * The 64 valid Base64 values.
      */
-    private final static byte[] _STANDARD_ALPHABET = {(byte) 'A', (byte) 'B',
+    private static final byte[] _STANDARD_ALPHABET = {(byte) 'A', (byte) 'B',
             (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G',
             (byte) 'H', (byte) 'I', (byte) 'J', (byte) 'K', (byte) 'L',
             (byte) 'M', (byte) 'N', (byte) 'O', (byte) 'P', (byte) 'Q',
@@ -112,7 +118,7 @@ public class DuoBase64 {
      * Translates a Base64 value to either its 6-bit reconstruction value or a
      * negative number indicating some other meaning.
      **/
-    private final static byte[] _STANDARD_DECODABET = {-9, -9, -9, -9, -9, -9,
+    private static final byte[] _STANDARD_DECODABET = {-9, -9, -9, -9, -9, -9,
             -9, -9, -9, // Decimal 0 - 8
             -5, -5, // Whitespace: Tab and Linefeed
             -9, -9, // Decimal 11 - 12
@@ -164,7 +170,7 @@ public class DuoBase64 {
      * URL safe based64 alphabet
      * Used in the URL- and Filename.
      */
-    private final static byte[] _URL_SAFE_ALPHABET = {(byte) 'A', (byte) 'B',
+    private static final byte[] _URL_SAFE_ALPHABET = {(byte) 'A', (byte) 'B',
             (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G',
             (byte) 'H', (byte) 'I', (byte) 'J', (byte) 'K', (byte) 'L',
             (byte) 'M', (byte) 'N', (byte) 'O', (byte) 'P', (byte) 'Q',
@@ -182,7 +188,7 @@ public class DuoBase64 {
     /**
      * Used in decoding URL- and Filename-safe dialects of Base64.
      */
-    private final static byte[] _URL_SAFE_DECODABET = {-9, -9, -9, -9, -9, -9,
+    private static final byte[] _URL_SAFE_DECODABET = {-9, -9, -9, -9, -9, -9,
             -9, -9, -9, // Decimal 0 - 8
             -5, -5, // Whitespace: Tab and Linefeed
             -9, -9, // Decimal 11 - 12
@@ -235,9 +241,9 @@ public class DuoBase64 {
     };
 
     /**
-     * Ordered base64 alphabet
+     * Ordered base64 alphabet.
      */
-    private final static byte[] _ORDERED_ALPHABET = {(byte) '-', (byte) '0',
+    private static final byte[] _ORDERED_ALPHABET = {(byte) '-', (byte) '0',
             (byte) '1', (byte) '2', (byte) '3', (byte) '4', (byte) '5',
             (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) 'A',
             (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F',
@@ -255,7 +261,7 @@ public class DuoBase64 {
     /**
      * Used in decoding the "ordered" dialect of Base64.
      */
-    private final static byte[] _ORDERED_DECODABET = {-9, -9, -9, -9, -9, -9,
+    private static final byte[] _ORDERED_DECODABET = {-9, -9, -9, -9, -9, -9,
             -9, -9, -9, // Decimal 0 - 8
             -5, -5, // Whitespace: Tab and Linefeed
             -9, -9, // Decimal 11 - 12
@@ -312,7 +318,7 @@ public class DuoBase64 {
      * Returns one of the _SOMETHING_ALPHABET byte arrays depending on the
      * options specified.
      */
-    private final static byte[] getAlphabet(int options) {
+    private static final byte[] getAlphabet(int options) {
         if ((options & URL_SAFE) == URL_SAFE) {
             return _URL_SAFE_ALPHABET;
         } else if ((options & ORDERED) == ORDERED) {
@@ -326,7 +332,7 @@ public class DuoBase64 {
      * Returns one of the _SOMETHING_DECODABET byte arrays depending on the
      * options specified.
      */
-    private final static byte[] getDecodabet(int options) {
+    private static final byte[] getDecodabet(int options) {
         if ((options & URL_SAFE) == URL_SAFE) {
             return _URL_SAFE_DECODABET;
         } else if ((options & ORDERED) == ORDERED) {
@@ -379,11 +385,11 @@ public class DuoBase64 {
      */
     private static byte[] encode3to4(byte[] source, int srcOffset,
                                      int numSigBytes, byte[] destination, int destOffset, int options) {
-        byte[] ALPHABET = getAlphabet(options);
+        byte[] alphabet = getAlphabet(options);
         // 1 2 3
         // 01234567890123456789012345678901 Bit position
         // --------000000001111111122222222 Array position from threeBytes
-        // --------| || || || | Six bit groups to index ALPHABET
+        // --------| || || || | Six bit groups to index alphabet
         // >>18 >>12 >> 6 >> 0 Right shift necessary
         // 0x3f 0x3f 0x3f Additional AND
         // Create buffer with zero-padding if there are only one or two
@@ -396,20 +402,20 @@ public class DuoBase64 {
                 | (numSigBytes > 2 ? ((source[srcOffset + 2] << 24) >>> 24) : 0);
         switch (numSigBytes) {
             case 3:
-                destination[destOffset] = ALPHABET[(inBuff >>> 18)];
-                destination[destOffset + 1] = ALPHABET[(inBuff >>> 12) & 0x3f];
-                destination[destOffset + 2] = ALPHABET[(inBuff >>> 6) & 0x3f];
-                destination[destOffset + 3] = ALPHABET[(inBuff) & 0x3f];
+                destination[destOffset] = alphabet[(inBuff >>> 18)];
+                destination[destOffset + 1] = alphabet[(inBuff >>> 12) & 0x3f];
+                destination[destOffset + 2] = alphabet[(inBuff >>> 6) & 0x3f];
+                destination[destOffset + 3] = alphabet[(inBuff) & 0x3f];
                 return destination;
             case 2:
-                destination[destOffset] = ALPHABET[(inBuff >>> 18)];
-                destination[destOffset + 1] = ALPHABET[(inBuff >>> 12) & 0x3f];
-                destination[destOffset + 2] = ALPHABET[(inBuff >>> 6) & 0x3f];
+                destination[destOffset] = alphabet[(inBuff >>> 18)];
+                destination[destOffset + 1] = alphabet[(inBuff >>> 12) & 0x3f];
+                destination[destOffset + 2] = alphabet[(inBuff >>> 6) & 0x3f];
                 destination[destOffset + 3] = EQUALS_SIGN;
                 return destination;
             case 1:
-                destination[destOffset] = ALPHABET[(inBuff >>> 18)];
-                destination[destOffset + 1] = ALPHABET[(inBuff >>> 12) & 0x3f];
+                destination[destOffset] = alphabet[(inBuff >>> 18)];
+                destination[destOffset + 1] = alphabet[(inBuff >>> 12) & 0x3f];
                 destination[destOffset + 2] = EQUALS_SIGN;
                 destination[destOffset + 3] = EQUALS_SIGN;
                 return destination;
@@ -457,9 +463,8 @@ public class DuoBase64 {
         // Return value according to relevant encoding.
         try {
             return new String(encoded, PREFERRED_ENCODING);
-        }
-        catch (java.io.UnsupportedEncodingException uue) {
-            return new String(encoded);
+        } catch (java.io.UnsupportedEncodingException uue) {
+            return new String(encoded, StandardCharsets.UTF_8);
         }
     }
 
@@ -489,8 +494,8 @@ public class DuoBase64 {
             throw new IllegalArgumentException("Cannot have length offset: " + len);
         }
         if (off + len > source.length) {
-            throw new IllegalArgumentException(String.format("Cannot have offset of %d and length of %d with array of length %d",
-                            off, len, source.length));
+            throw new IllegalArgumentException(String.format("Cannot have offset of %d and length of %d with array of" +
+                    " length %d", off, len, source.length));
         }
         if ((options & GZIP) != 0) {
             java.io.ByteArrayOutputStream baos = null;
@@ -503,30 +508,33 @@ public class DuoBase64 {
                 gzos = new java.util.zip.GZIPOutputStream(b64os);
                 gzos.write(source, off, len);
                 gzos.close();
-            }
-            catch (java.io.IOException e) {
+            } catch (java.io.IOException e) {
                 // Catch it and then throw it immediately so that
                 // the finally{} block is called for cleanup.
                 throw e;
-            }
-            finally {
+            } finally {
                 try {
-                    gzos.close();
-                } catch (Exception e) {
+                    if (gzos != null) {
+                        gzos.close();
+                    }
+                } catch (IOException ignored) {
                 }
                 try {
-                    b64os.close();
-                } catch (Exception e) {
+                    if (b64os != null) {
+                        b64os.close();
+                    }
+                } catch (IOException ignored) {
                 }
                 try {
-                    baos.close();
-                } catch (Exception e) {
+                    if (baos != null) {
+                        baos.close();
+                    }
+                } catch (IOException ignored) {
                 }
             }
             return baos.toByteArray();
-        }
-        // Else, don't compress. Better not to use streams at all then.
-        else {
+        } else {
+            // Else, don't compress. Better not to use streams at all then.
             boolean breakLines = (options & DO_BREAK_LINES) != 0;
             // int len43 = len * 4 / 3;
             // byte[] outBuff = new byte[ ( len43 ) // Main 4:3
@@ -606,52 +614,49 @@ public class DuoBase64 {
             throw new NullPointerException("Destination array was null.");
         }
         if (srcOffset < 0 || srcOffset + 3 >= source.length) {
-            throw new IllegalArgumentException(String.format("Source array with length %d cannot have offset of %d and still process four bytes.",
-                                    source.length, srcOffset));
+            throw new IllegalArgumentException(String.format("Source array with length %d cannot have offset of %d " +
+                    "and still process four bytes.", source.length, srcOffset));
         }
         if (destOffset < 0 || destOffset + 2 >= destination.length) {
             throw new IllegalArgumentException(
-                    String.format("Destination array with length %d cannot have offset of %d and still store three bytes.",
-                                    destination.length, destOffset));
+                    String.format("Destination array with length %d cannot have offset of %d and still store three " +
+                            "bytes.", destination.length, destOffset));
         }
-        byte[] DECODABET = getDecodabet(options);
+        byte[] decodabet = getDecodabet(options);
         // Example: Dk==
         if (source[srcOffset + 2] == EQUALS_SIGN) {
             // Two ways to do the same thing. Don't know which way I like best.
-            // int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 ) >>> 6
+            // int outBuff = ( ( decodabet[ source[ srcOffset ] ] << 24 ) >>> 6
             // )
-            // | ( ( DECODABET[ source[ srcOffset + 1] ] << 24 ) >>> 12 );
-            int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)
-                    | ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12);
+            // | ( ( decodabet[ source[ srcOffset + 1] ] << 24 ) >>> 12 );
+            int outBuff = ((decodabet[source[srcOffset]] & 0xFF) << 18)
+                    | ((decodabet[source[srcOffset + 1]] & 0xFF) << 12);
             destination[destOffset] = (byte) (outBuff >>> 16);
             return 1;
-        }
-        // Example: DkL=
-        else if (source[srcOffset + 3] == EQUALS_SIGN) {
+        } else if (source[srcOffset + 3] == EQUALS_SIGN) {    // Example: DkL=
+
             // Two ways to do the same thing. Don't know which way I like best.
-            // int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 ) >>> 6
+            // int outBuff = ( ( decodabet[ source[ srcOffset ] ] << 24 ) >>> 6
             // )
-            // | ( ( DECODABET[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )
-            // | ( ( DECODABET[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 );
-            int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)
-                    | ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12)
-                    | ((DECODABET[source[srcOffset + 2]] & 0xFF) << 6);
+            // | ( ( decodabet[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )
+            // | ( ( decodabet[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 );
+            int outBuff = ((decodabet[source[srcOffset]] & 0xFF) << 18)
+                    | ((decodabet[source[srcOffset + 1]] & 0xFF) << 12)
+                    | ((decodabet[source[srcOffset + 2]] & 0xFF) << 6);
             destination[destOffset] = (byte) (outBuff >>> 16);
             destination[destOffset + 1] = (byte) (outBuff >>> 8);
             return 2;
-        }
-        // Example: DkLE
-        else {
+        } else {  // Example: DkLE
             // Two ways to do the same thing. Don't know which way I like best.
-            // int outBuff = ( ( DECODABET[ source[ srcOffset ] ] << 24 ) >>> 6
+            // int outBuff = ( ( decodabet[ source[ srcOffset ] ] << 24 ) >>> 6
             // )
-            // | ( ( DECODABET[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )
-            // | ( ( DECODABET[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 )
-            // | ( ( DECODABET[ source[ srcOffset + 3 ] ] << 24 ) >>> 24 );
-            int outBuff = ((DECODABET[source[srcOffset]] & 0xFF) << 18)
-                    | ((DECODABET[source[srcOffset + 1]] & 0xFF) << 12)
-                    | ((DECODABET[source[srcOffset + 2]] & 0xFF) << 6)
-                    | ((DECODABET[source[srcOffset + 3]] & 0xFF));
+            // | ( ( decodabet[ source[ srcOffset + 1 ] ] << 24 ) >>> 12 )
+            // | ( ( decodabet[ source[ srcOffset + 2 ] ] << 24 ) >>> 18 )
+            // | ( ( decodabet[ source[ srcOffset + 3 ] ] << 24 ) >>> 24 );
+            int outBuff = ((decodabet[source[srcOffset]] & 0xFF) << 18)
+                    | ((decodabet[source[srcOffset + 1]] & 0xFF) << 12)
+                    | ((decodabet[source[srcOffset + 2]] & 0xFF) << 6)
+                    | ((decodabet[source[srcOffset + 3]] & 0xFF));
             destination[destOffset] = (byte) (outBuff >> 16);
             destination[destOffset + 1] = (byte) (outBuff >> 8);
             destination[destOffset + 2] = (byte) (outBuff);
@@ -686,10 +691,10 @@ public class DuoBase64 {
         if (len == 0) {
             return new byte[0];
         } else if (len < 4) {
-            throw new IllegalArgumentException("Base64-encoded string must have at least four characters, but length specified was "
-                            + len);
+            throw new IllegalArgumentException("Base64-encoded string must have at least four characters, but length " +
+                    "specified was " + len);
         }
-        byte[] DECODABET = getDecodabet(options);
+        byte[] decodabet = getDecodabet(options);
         int len34 = len * 3 / 4; // Estimate on array size
         byte[] outBuff = new byte[len34]; // Upper limit on size of output
         int outBuffPosn = 0; // Keep track of where we're writing
@@ -697,9 +702,9 @@ public class DuoBase64 {
         // white space
         int b4Posn = 0; // Keep track of four byte input buffer
         int i = 0; // Source array counter
-        byte sbiDecode = 0; // Special value from DECODABET
+        byte sbiDecode = 0; // Special value from decodabet
         for (i = off; i < off + len; i++) { // Loop through source
-            sbiDecode = DECODABET[source[i] & 0xFF];
+            sbiDecode = decodabet[source[i] & 0xFF];
             // White space, Equals sign, or legit Base64 character
             // Note the values such as -5 and -9 in the
             // DECODABETs at the top of the file.
@@ -716,11 +721,10 @@ public class DuoBase64 {
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 // There's a bad input character in the Base64 stream.
-                throw new java.io.IOException(String.format("Bad Base64 input character decimal %d in array position %d",
-                                        ((int) source[i]) & 0xFF, i));
+                throw new java.io.IOException(String.format("Bad Base64 input character decimal %d in array position " +
+                        "%d", ((int) source[i]) & 0xFF, i));
             }
         } // each input character
         byte[] out = new byte[outBuffPosn];
@@ -757,16 +761,15 @@ public class DuoBase64 {
         byte[] bytes;
         try {
             bytes = s.getBytes(PREFERRED_ENCODING);
-        }
-        catch (java.io.UnsupportedEncodingException uee) {
-            bytes = s.getBytes();
+        } catch (java.io.UnsupportedEncodingException uee) {
+            bytes = s.getBytes(StandardCharsets.UTF_8);
         }
         // Decode
         bytes = decode(bytes, 0, bytes.length, options);
         // Check to see if it's gzip-compressed
         // GZIP Magic Two-Byte Number: 0x8b1f (35615)
         boolean dontGunzip = (options & DONT_GUNZIP) != 0;
-        if ((bytes != null) && (bytes.length >= 4) && (!dontGunzip)) {
+        if (bytes.length >= 4 && !dontGunzip) {
             int head = ((int) bytes[0] & 0xff) | ((bytes[1] << 8) & 0xff00);
             if (java.util.zip.GZIPInputStream.GZIP_MAGIC == head) {
                 java.io.ByteArrayInputStream bais = null;
@@ -783,22 +786,26 @@ public class DuoBase64 {
                     }
                     // No error? Get new bytes.
                     bytes = baos.toByteArray();
-                }
-                catch (java.io.IOException e) {
+                } catch (java.io.IOException e) {
                     throw new NullPointerException("Input was null.");
-                }
-                finally {
+                } finally {
                     try {
-                        baos.close();
-                    } catch (Exception e) {
+                        if (baos != null) {
+                            baos.close();
+                        }
+                    } catch (IOException ignored) {
                     }
                     try {
-                        gzis.close();
-                    } catch (Exception e) {
+                        if (gzis != null) {
+                            gzis.close();
+                        }
+                    } catch (IOException ignored) {
                     }
                     try {
-                        bais.close();
-                    } catch (Exception e) {
+                        if (bais != null) {
+                            bais.close();
+                        }
+                    } catch (IOException ignored) {
                     }
                 }
             }
@@ -838,6 +845,7 @@ public class DuoBase64 {
          * ENCODE or DECODE: Encode or Decode as data is read.
          * DO_BREAK_LINES: don't break lines at 76 characters
          * (only meaningful when encoding)
+         *
          * @param out     the java.io.OutputStream to which data will be
          *                written.
          * @param options Specified options.
@@ -884,9 +892,7 @@ public class DuoBase64 {
                     }
                     position = 0;
                 }
-            }
-            // Else, Decoding
-            else {
+            } else {    // Else, Decoding
                 // Meaningful Base64 character?
                 if (decodabet[theByte & 0x7f] > WHITE_SPACE_ENC) {
                     buffer[position++] = (byte) theByte;
@@ -895,8 +901,7 @@ public class DuoBase64 {
                         out.write(b4, 0, len);
                         position = 0;
                     }
-                }
-                else if (decodabet[theByte & 0x7f] != WHITE_SPACE_ENC) {
+                } else if (decodabet[theByte & 0x7f] != WHITE_SPACE_ENC) {
                     throw new java.io.IOException("Invalid character in Base64 data.");
                 }
             }
@@ -931,8 +936,7 @@ public class DuoBase64 {
                 if (encode) {
                     out.write(encode3to4(b4, buffer, position, options));
                     position = 0;
-                }
-                else {
+                } else {
                     throw new java.io.IOException("Base64 input not properly padded.");
                 }
             }

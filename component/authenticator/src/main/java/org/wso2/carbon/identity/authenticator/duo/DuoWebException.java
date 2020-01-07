@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+/**
+ * DuoWebException.
+ */
 public class DuoWebException extends Exception {
 
     public DuoWebException(String message) {

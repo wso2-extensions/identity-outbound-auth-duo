@@ -35,8 +35,7 @@ import java.util.Hashtable;
 public class DuoAuthenticatorServiceComponent {
 
     private static final Log log = LogFactory.getLog(DuoAuthenticatorServiceComponent.class);
-    
-    private static RealmService realmService;
+
     protected void activate(ComponentContext ctxt) {
         try {
             DuoAuthenticator authenticator = new DuoAuthenticator();
@@ -50,24 +49,20 @@ public class DuoAuthenticatorServiceComponent {
             log.fatal("Error while activating the DUO authenticator ", e);
         }
     }
+
     protected void deactivate(ComponentContext ctxt) {
         if (log.isDebugEnabled()) {
             log.info("DuoAuthenticator bundle is deactivated");
         }
     }
-    
+
     protected void setRealmService(RealmService realmService) {
         log.debug("Setting the Realm Service");
-        DuoAuthenticatorServiceComponent.realmService = realmService;
+        DuoServiceHolder.getInstance().setRealmService(realmService);
     }
 
     protected void unsetRealmService(RealmService realmService) {
         log.debug("UnSetting the Realm Service");
-        DuoAuthenticatorServiceComponent.realmService = null;
+        DuoServiceHolder.getInstance().setRealmService(null);
     }
-
-    public static RealmService getRealmService() {
-        return realmService;
-    }
-
 }

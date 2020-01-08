@@ -47,29 +47,53 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 
     >> NOTE : You may have done this step already if you configured the [Duo Security Provisioning Connector](https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Security+Provisioning+Connector). If so, you can skip this step.
 
-4. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the following to the   <IS_HOME>/repository/conf/identity/application-authentication.xml file under the <AuthenticatorConfigs> section. This verification only requires the Admin API credentials.
+4. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the configuration as following,
+   
+   *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file  
+    ```toml
+    [authentication.authenticator.DuoAuthenticator]
+    name="DuoAuthenticator"
+    enable=true
+    
+    [authentication.authenticator.DuoAuthenticator.parameters]
+    EnableMobileVerification=true
+    ```
+   
+   *For 5.8.0 and earlier* add the following to the `<IS_HOME>/repository/conf/identity/application-authentication.xml` file under the section `AuthenticatorConfig`. 
     ```xml
-   <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
-        <Parameter name="EnableMobileVerification">true</Parameter>
-   </AuthenticatorConfig>
+    <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
+         <Parameter name="EnableMobileVerification">true</Parameter>
+    </AuthenticatorConfig>
     ```
     
-5.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured in the `application-authentication.xml` file in the `<IS_HOME>/repository/conf/identity` directory.
+    This verification only requires the Admin API credentials.    
 
-```
-<AuthenticatorConfigs>
-     ...
-     <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
-          ...
-          <Parameter name="usecase">association</Parameter>
-          <Parameter name="sendDuoToFederatedMobileAttribute">true</Parameter>
-          <Parameter name="federatedMobileNumberAttributeKey">http://wso2.org/claims/mobile</Parameter>
-          <Parameter name="secondaryUserstore">primary</Parameter>
-          ...
-     </AuthenticatorConfig>
-     ...
-</AuthenticatorConfigs>
-```
+5.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured,
+
+    *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file, 
+    ```toml
+    [authentication.authenticator.DuoAuthenticator]
+    name="DuoAuthenticator"
+    enable=true
+    
+    [authentication.authenticator.DuoAuthenticator.parameters]
+    usecase="association"
+    sendDuoToFederatedMobileAttribute=true
+    federatedMobileNumberAttributeKey="http://wso2.org/claims/mobile"
+    secondaryUserstore="primary"
+    ```
+
+    *For 5.8.0 and earlier* add the following to the `<IS_HOME>/repository/conf/identity/application-authentication.xml` file under the section. 
+    ```xml
+    <AuthenticatorConfigs>
+         <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
+              <Parameter name="usecase">association</Parameter>
+              <Parameter name="sendDuoToFederatedMobileAttribute">true</Parameter>
+              <Parameter name="federatedMobileNumberAttributeKey">http://wso2.org/claims/mobile</Parameter>
+              <Parameter name="secondaryUserstore">primary</Parameter>
+         </AuthenticatorConfig>
+    </AuthenticatorConfigs>
+    ```
 
 - `sendDuoToFederatedMobileAttribute` - This specifies whether the mobile number claim should be taken from the claims provided by the Identity Provider.
 - `federatedMobileNumberAttributeKey` - This specifies the value of the mobile claim provided by the Identity Provider. This property must be configured if the `useFederatedMobileClaim` is `true`.

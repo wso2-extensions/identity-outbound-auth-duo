@@ -82,11 +82,11 @@
             <version>${identity.extension.utils}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wso2.carbon.identity</groupId>
+                    <groupId>org.wso2.carbon.identity.outbound.auth.oidc</groupId>
                     <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.wso2.carbon.identity</groupId>
+                    <groupId>org.wso2.carbon.identity.framework</groupId>
                     <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
                 </exclusion>
             </exclusions>

@@ -44,7 +44,7 @@
     </profiles>
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.idp.mgt</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
@@ -55,43 +55,43 @@
             <version>${commons-logging.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.common</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.user.profile</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.association.account</groupId>
             <artifactId>org.wso2.carbon.identity.user.account.association</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.association.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.notification.mgt</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.provisioning</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
@@ -109,7 +109,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
@@ -125,15 +125,9 @@
             <version>1.0.1</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
-            <artifactId>org.wso2.carbon.identity.application.authenticator.openid</artifactId>
-            <version>${carbon.identity.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.outbound.auth.oidc</groupId>
             <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.outbound.auth.oidc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -180,7 +174,7 @@
             <version>${axiom.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.authentication.endpoint.util</artifactId>
             <version>${carbon.identity.version}</version>
             <scope>provided</scope>
@@ -431,9 +425,12 @@
         </snapshotRepository>
     </distributionManagement>
     <properties>
-        <carbon.identity.version>5.0.7</carbon.identity.version>
+        <carbon.identity.version>5.17.5</carbon.identity.version>
+        <carbon.identity.association.version>5.4.0</carbon.identity.association.version>
+        <carbon.identity.outbound.auth.openid.version>5.5.0</carbon.identity.outbound.auth.openid.version>
+        <carbon.identity.outbound.auth.oidc.version>5.5.0</carbon.identity.outbound.auth.oidc.version>
         <commons-logging.version>4.4.3</commons-logging.version>
-        <carbon.kernel.version>4.4.3</carbon.kernel.version>
+        <carbon.kernel.version>4.6.0</carbon.kernel.version>
         <oltu.version>1.0.0.wso2v2</oltu.version>
         <org.apache.oltu.oauth2.client.version>1.0.0</org.apache.oltu.oauth2.client.version>
         <oltu.package.import.version.range>[1.0.0, 2.0.0)</oltu.package.import.version.range>
@@ -442,7 +439,7 @@
         <javax.servelet.jstl.version>1.2</javax.servelet.jstl.version>
         <commons-codec.version>1.4.0.wso2v1</commons-codec.version>
         <axiom.version>1.2.11-wso2v6</axiom.version>
-        <org.wso2.securevault.version>1.0.0-wso2v2</org.wso2.securevault.version>
+        <org.wso2.securevault.version>1.1.3</org.wso2.securevault.version>
         <commons-lang.wso2.version>2.6.0.wso2v1</commons-lang.wso2.version>
         <encoder.wso2.version>1.2.0.wso2v1</encoder.wso2.version>
         <mockito.version>1.10.19</mockito.version>

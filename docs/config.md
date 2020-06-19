@@ -40,7 +40,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 
  1. Place the duoauthenticationendpoint.war file into the <IS_HOME>/repository/deployment/server/webapps directory.
      
- 2. Place the org.wso2.carbon.identity.authenticator.duo-1.0.5.jar file into the <IS_HOME>/repository/components/dropins directory.
+ 2. Place the org.wso2.carbon.identity.authenticator.duo-1.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
     >> NOTE : If you want to upgrade the Duo Authenticator in your existing IS pack, please refer [upgrade instructions](https://docs.wso2.com/display/ISCONNECTORS/Upgrading+an+Authenticator).
 
  3. Place the [okio-1.9.0.jar](hhttps://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=1.9.0) into the <IS_HOME>/repository/components/lib directory.

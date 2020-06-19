@@ -1,7 +1,7 @@
 ## Duo Security Authenticator
 The Duo Security authenticator allows you to authenticate a user using Duo Security through WSO2 Identity Server. Duo Security provides security beyond passwords.
 
-## Getting started
+## Configuring and Getting started
 To get started with the authenticator, go to [Configuring Duo Security Authenticator](config.md). Once you have completed your configurations, you can authenticate users using the Duo authenticator.
 
 ## Additional information

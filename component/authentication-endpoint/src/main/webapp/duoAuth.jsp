@@ -19,6 +19,28 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
          pageEncoding="UTF-8"%>
 <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <style>
+            html, body {
+                height: 100%;
+            }
+            body {
+                flex-direction: column;
+                display: flex;
+            }
+            main {
+                flex-shrink: 0;
+            }
+            
+            main.center-segment {
+                margin: auto;
+                display: flex;
+                align-items: center;
+            }
+        </style>
+    </head>
     <script src="js/Duo-Web-v1.bundled.js"></script>
     <script type="text/javascript">
           var value = '<%=request.getParameter("signreq")%>' ;
@@ -30,9 +52,11 @@
             });
     </script>
     <body>
-         <iframe id="duo_iframe" width="620" height="330" frameborder="0"></iframe>
-         <form method="POST" id="duo_form">
-             <input type="hidden" name="sessionDataKey" value='<%=request.getParameter("sessionDataKey")%>' />
-         </form>
+        <main class="center-segment">
+             <iframe id="duo_iframe" width="620" height="330" frameborder="0"></iframe>
+             <form method="POST" id="duo_form">
+                 <input type="hidden" name="sessionDataKey" value='<%=request.getParameter("sessionDataKey")%>' />
+             </form>
+        </main>
     </body>
 </html>

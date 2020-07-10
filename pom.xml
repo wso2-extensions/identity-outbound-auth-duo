@@ -164,11 +164,6 @@
             <version>${javax.servelet.jstl.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-codec.wso2</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>${commons-codec.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.ws.commons.axiom</groupId>
             <artifactId>axiom-api</artifactId>
             <version>${axiom.version}</version>

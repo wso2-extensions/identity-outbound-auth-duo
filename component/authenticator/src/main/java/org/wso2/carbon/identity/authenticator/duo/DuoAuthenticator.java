@@ -41,6 +41,7 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
@@ -76,12 +77,24 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             throws AuthenticationFailedException {
 
         String username;
+        AuthenticatedUser authenticatedUser;
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
         context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
         username = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
+
+        authenticatedUser = (AuthenticatedUser) context.getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
+        if (authenticatedUser != null) {
+            username = authenticatedUser.getUserName();
+            if (!isDisableTenantDomainToUserName(authenticatorProperties)) {
+                username = UserCoreUtil.addTenantDomainToEntry(username, authenticatedUser.getTenantDomain());
+            }
+            if (!isDisableUserStoreDomainToUserName(authenticatorProperties)) {
+                username = IdentityUtil.addDomainToName(username, authenticatedUser.getUserStoreDomain());
+            }
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("user name : " + username);
@@ -114,6 +127,28 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else {
             throw new AuthenticationFailedException("Duo authenticator failed to initialize");
         }
+    }
+
+    /**
+     * Check if the tenant domain should be appended or not.
+     *
+     * @param authenticatorProperties the authenticator properties
+     * @return True if the tenant domain should not be appended.
+     */
+    private boolean isDisableTenantDomainToUserName(Map<String, String> authenticatorProperties) {
+
+        return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN));
+    }
+
+    /**
+     * Check if the user store domain should be appended or not.
+     *
+     * @param authenticatorProperties the authenticator properties
+     * @return True if the user store domain should not be appended.
+     */
+    private boolean isDisableUserStoreDomainToUserName(Map<String, String> authenticatorProperties) {
+
+        return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN));
     }
 
     /**

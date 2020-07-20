@@ -88,10 +88,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         authenticatedUser = (AuthenticatedUser) context.getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
         if (authenticatedUser != null) {
             username = authenticatedUser.getUserName();
-            if (!isDisableTenantDomainToUserName(authenticatorProperties)) {
+            if (!isDisableTenantDomainInUserName(authenticatorProperties)) {
                 username = UserCoreUtil.addTenantDomainToEntry(username, authenticatedUser.getTenantDomain());
             }
-            if (!isDisableUserStoreDomainToUserName(authenticatorProperties)) {
+            if (!isDisableUserStoreDomainInUserName(authenticatorProperties)) {
                 username = IdentityUtil.addDomainToName(username, authenticatedUser.getUserStoreDomain());
             }
         }
@@ -135,7 +135,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @param authenticatorProperties the authenticator properties
      * @return True if the tenant domain should not be appended.
      */
-    private boolean isDisableTenantDomainToUserName(Map<String, String> authenticatorProperties) {
+    private boolean isDisableTenantDomainInUserName(Map<String, String> authenticatorProperties) {
 
         return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN));
     }
@@ -146,7 +146,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @param authenticatorProperties the authenticator properties
      * @return True if the user store domain should not be appended.
      */
-    private boolean isDisableUserStoreDomainToUserName(Map<String, String> authenticatorProperties) {
+    private boolean isDisableUserStoreDomainInUserName(Map<String, String> authenticatorProperties) {
 
         return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN));
     }

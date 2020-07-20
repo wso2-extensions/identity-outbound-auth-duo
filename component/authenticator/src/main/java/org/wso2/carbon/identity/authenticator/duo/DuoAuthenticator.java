@@ -136,7 +136,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @return True if the tenant domain should not be appended.
      */
     private boolean isDisableTenantDomainInUserName(Map<String, String> authenticatorProperties) {
-
+  
         return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN));
     }
 
@@ -147,7 +147,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @return True if the user store domain should not be appended.
      */
     private boolean isDisableUserStoreDomainInUserName(Map<String, String> authenticatorProperties) {
-
+      
         return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN));
     }
 

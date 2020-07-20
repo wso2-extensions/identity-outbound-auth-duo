@@ -40,59 +40,42 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 
  1. Place the duoauthenticationendpoint.war file into the <IS_HOME>/repository/deployment/server/webapps directory.
      
- 2. Place the org.wso2.carbon.identity.authenticator.duo-1.0.5.jar file into the <IS_HOME>/repository/components/dropins directory.
+ 2. Place the org.wso2.carbon.identity.authenticator.duo-1.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
     >> NOTE : If you want to upgrade the Duo Authenticator in your existing IS pack, please refer [upgrade instructions](https://docs.wso2.com/display/ISCONNECTORS/Upgrading+an+Authenticator).
 
- 3. Place the [okio-1.9.0.jar](https://github.com/square/okio/tree/okio-parent-1.9.0#download) into the <IS_HOME>/repository/components/lib directory.
+ 3. Place the [okio-1.9.0.jar](hhttps://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=1.9.0) into the <IS_HOME>/repository/components/lib directory.
 
     >> NOTE : You may have done this step already if you configured the [Duo Security Provisioning Connector](https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Security+Provisioning+Connector). If so, you can skip this step.
 
-4. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the configuration as following,
+4. To enable the Duo Security authenticator, add the following configuration.
    
-   *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file  
+   *For 5.9.0 and later* add the following to the
+   `<IS_HOME>/repository/conf/deployment.toml` file
     ```toml
     [authentication.authenticator.DuoAuthenticator]
     name="DuoAuthenticator"
     enable=true
     
+5. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the configuration as following,
+   
+   *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file  
+    ```toml
     [authentication.authenticator.DuoAuthenticator.parameters]
     EnableMobileVerification=true
     ```
    
-   *For 5.8.0 and earlier* add the following to the `<IS_HOME>/repository/conf/identity/application-authentication.xml` file under the section `AuthenticatorConfig`. 
-    ```xml
-    <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
-         <Parameter name="EnableMobileVerification">true</Parameter>
-    </AuthenticatorConfig>
-    ```
-    
-    This verification only requires the Admin API credentials.    
+    This verification only requires the Admin API credentials that we
+    will later configure.
 
-5.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured,
+6.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured,
 
     *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file, 
     ```toml
-    [authentication.authenticator.DuoAuthenticator]
-    name="DuoAuthenticator"
-    enable=true
-    
     [authentication.authenticator.DuoAuthenticator.parameters]
     usecase="association"
     sendDuoToFederatedMobileAttribute=true
     federatedMobileNumberAttributeKey="http://wso2.org/claims/mobile"
     secondaryUserstore="primary"
-    ```
-
-    *For 5.8.0 and earlier* add the following to the `<IS_HOME>/repository/conf/identity/application-authentication.xml` file under the section. 
-    ```xml
-    <AuthenticatorConfigs>
-         <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
-              <Parameter name="usecase">association</Parameter>
-              <Parameter name="sendDuoToFederatedMobileAttribute">true</Parameter>
-              <Parameter name="federatedMobileNumberAttributeKey">http://wso2.org/claims/mobile</Parameter>
-              <Parameter name="secondaryUserstore">primary</Parameter>
-         </AuthenticatorConfig>
-    </AuthenticatorConfigs>
     ```
 
 - `sendDuoToFederatedMobileAttribute` - This specifies whether the mobile number claim should be taken from the claims provided by the Identity Provider.
@@ -117,36 +100,28 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     <tr class="odd">
     <td><code>                 userAttribute                </code></td>
     <td><div class="content-wrapper">
-    <p>The name of the  federatedauthenticator's user attribute. That is,the local user namewhich is contained in a federated user's attribute. When using this, add the following parameter under the <code>                   &lt;AuthenticatorConfig name="Duo" enabled="true"&gt;                  </code> section in the <code>                   &lt;IS_HOME&gt;/repository/conf/identity/application-authentication.xml                  </code> file and put the value (e.g., email, screen_name, id, etc.).</p>
+    <p>The name of the  federatedauthenticator's user attribute. That is,the local user namewhich is contained in a federated user's attribute. When using this, add the following parameter under the <code>                   authentication.authenticator.DuoAuthenticator                  </code> section in the <code>                   &lt;IS_HOME&gt;/repository/conf/deployment.toml                  </code> file and put the value (e.g., email, screen_name, id, etc.).</p>
     <div class="code panel pdl" style="border-width: 1px;">
     <div class="codeContent panelContent pdl">
-    <div class="sourceCode" id="cb1" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;userAttribute&quot;</span><span class="kw">&gt;</span>email<span class="kw">&lt;/Parameter&gt;</span></a></code></pre></div>
+    <div class="sourceCode" id="cb1" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb1-1" title="1"><p class="kw">[authentication.authenticator.DuoAuthenticator]</p><span class="st">userAttribute</span><span class="kw">&#61;</span>&quot;mobile&quot;</a></code></pre></div>
     </div>
     </div>
-    <p>If you use, OpenID Connect supported authenticators such as LinkedIn, Foursquare, etc., or in the case of multiple social login options as the first step and Duo as second step, you need to add similar configuration for the specific authenticator in the <code>                   &lt;IS_HOME&gt;/repository/conf/identity/application-authentication.xml                  </code> file under the &lt; <code>                   AuthenticatorConfigs                  </code> &gt; section as follows (the following shows the configuration forFoursquare,LinkedIn and Facebook authenticator respectively).</p>
-    <p>Inside the <code>                   AuthenticatorConfig                  </code> (i.e., Foursquare), add the specific <code>                   userAttribute                  </code> with a prefix of the (current step) authenticator name (i.e., Duo-userAttribute).</p>
-    <div class="code panel pdl" style="border-width: 1px;">
-    <div class="codeContent panelContent pdl">
-    <div class="sourceCode" id="cb2" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;Foursquare&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
-    <a class="sourceLine" id="cb2-2" title="2">       <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>http://wso2.org/foursquare/claims/email<span class="kw">&lt;/Parameter&gt;</span></a>
-    <a class="sourceLine" id="cb2-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
-    </div>
-    </div>
-    <div class="code panel pdl" style="border-width: 1px;">
-    <div class="codeContent panelContent pdl">
-    <div class="sourceCode" id="cb3" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;LinkedIn&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
-    <a class="sourceLine" id="cb3-2" title="2">   <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>http://wso2.org/linkedin/claims/emailAddress<span class="kw">&lt;/Parameter&gt;</span></a>
-    <a class="sourceLine" id="cb3-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
-    </div>
-    </div>
-    <div class="code panel pdl" style="border-width: 1px;">
-    <div class="codeContent panelContent pdl">
-    <div class="sourceCode" id="cb4" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">&lt;AuthenticatorConfig</span><span class="ot"> name=</span><span class="st">&quot;FacebookAuthenticator&quot;</span><span class="ot"> enabled=</span><span class="st">&quot;true&quot;</span><span class="kw">&gt;</span></a>
-    <a class="sourceLine" id="cb4-2" title="2">    <span class="kw">&lt;Parameter</span><span class="ot"> name=</span><span class="st">&quot;SMSOTP-userAttribute&quot;</span><span class="kw">&gt;</span>email<span class="kw">&lt;/Parameter&gt;</span></a>
-    <a class="sourceLine" id="cb4-3" title="3"><span class="kw">&lt;/AuthenticatorConfig&gt;</span></a></code></pre></div>
-    </div>
-    </div>
-    <p>Likewise, you can add the AuthenticatorConfig forAmazon,Google,Twitterand Instagram with relevant values.</p>
+    <p>If you use, OpenID Connect supported authenticators such as LinkedIn, Foursquare, etc., or in the case of multiple social login options as the first step and Duo as second step, you need to add similar configuration for the specific authenticator in the <code>                   &lt;IS_HOME&gt;/repository/conf/deployment.toml </code> file under the corresponding authenticator's configuration section section as follows (the following shows the configuration for Facebook and Foursquare  authenticator respectively).</p>
+    <p><b>Facebook</b></p>
+          <div class="sourceCode" id="cb1" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">                
+     [authentication.authenticator.facebook.parameters]
+     EmailOTP-userAttribute = "mobile"
+     federatedEmailAttributeKey = "mobile"
+         </span></a></code></pre></div>                    
+     <p><b>Foursquare</b></p>
+          <div class="sourceCode" id="cb1" data-syntaxhighlighter-params="brush: xml; gutter: false; theme: Confluence" data-theme="Confluence" style="brush: xml; gutter: false; theme: Confluence"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">               
+     [[authentication.custom_authenticator]]
+     name= "Foursquare"
+     [authentication.custom_authenticator.parameters]
+     EmailOTP-userAttribute = "http://wso2.org/foursquare/claims/mobile"
+     federatedEmailAttributeKey = "http://wso2.org/foursquare/claims/mobile"
+      </span></a></code></pre></div>                               
+    <p>Likewise, you can add the AuthenticatorConfig for Amazon, Google, Twitterand Instagram with relevant values.</p>
     </div></td>
     </tr>
     <tr class="even">
@@ -221,8 +196,10 @@ You have now added and configured the service provider.
 
 ### Testing the sample
  
- 1. To test the sample, go to the following URL: http://<TOMCAT_HOST>:<TOMCAT_PORT>/travelocity.com/index.jsp . E.g., http://localhost:8080/travelocity.com
- 2. Login with SAML from the WSO2 Identity Server.
+1.  To test the sample, go to the following URL:
+    http://<TOMCAT_HOST>:<TOMCAT_PORT>/travelocity.com/index.jsp . E.g.,
+    http://localhost:8080/travelocity.com . Login with to
+    travelocity.com via the WSO2 Identity Server.
 
     ![alt text](images/travelocity.png)
  3. The basic authentication page appears. Log in using your username and password.
@@ -231,6 +208,11 @@ You have now added and configured the service provider.
  4. You are directed to the Duo Security authentication page.
 
     ![alt text](images/duo5.png)
+    
+> >    NOTE : If you haven't installed the Duo app in your mobile, you
+> >    will be guided to install and set-up the application at this
+> >    step. 
+
  5. If your verification is successful, you are taken to the home page of the travelocity.com app.
 
     ![alt text](images/result.png)

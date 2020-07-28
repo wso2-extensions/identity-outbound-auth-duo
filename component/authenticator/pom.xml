@@ -19,11 +19,11 @@
     <parent>
         <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
         <artifactId>identity-outbound-auth-duo</artifactId>
-        <version>1.1.4-SNAPSHOT</version>
+        <version>1.1.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.connector</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <version>1.1.6-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon - Authenticator Library For Duo</name>
     <url>http://wso2.org</url>

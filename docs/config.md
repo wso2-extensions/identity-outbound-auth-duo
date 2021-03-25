@@ -29,7 +29,7 @@ This is tested for the Duo Security API version V2.
     ![alt text](images/duodoc5.png)
  >> NOTE : If you can not see the type “Admin API” in the dropdown, contact the Duo team through support@duosecurity.com and ask for Admin API permission.
 
- When configuring the Admin API, select the Grant read resource permission.
+6. When configuring the Admin API, select the Grant read resource permission.
 
  ![alt text](images/duodoc5.png)
 

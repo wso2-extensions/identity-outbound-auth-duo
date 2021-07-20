@@ -23,12 +23,10 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
@@ -75,7 +73,6 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 /**
  * Test case for Mobile based 2nd factor Local Authenticator.
  */
-@RunWith(PowerMockRunner.class)
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
         IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class,
         FederatedAuthenticatorUtil.class, DuoServiceHolder.class})

@@ -25,7 +25,7 @@
     </parent>
     <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
     <artifactId>identity-outbound-auth-duo</artifactId>
-    <version>1.1.12</version>
+    <version>1.1.13-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Extension - Duo Pom</name>
     <url>http://wso2.org</url>
@@ -192,7 +192,7 @@
         <developerConnection>
             scm:git:https://github.com/wso2-extensions/identity-outbound-auth-duo.git
         </developerConnection>
-        <tag>v1.1.12</tag>
+        <tag>HEAD</tag>
     </scm>
     <build>
         <extensions>

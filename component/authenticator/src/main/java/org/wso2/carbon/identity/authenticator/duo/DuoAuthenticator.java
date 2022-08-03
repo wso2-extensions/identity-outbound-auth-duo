@@ -122,6 +122,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
                 response.sendRedirect(duoUrl);
             } catch (IOException e) {
+                log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             }
         } else {
@@ -180,10 +181,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             }
             return userInfo;
         } catch (UnsupportedEncodingException e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_SIGN_REQUEST, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_SIGN_REQUEST, e);
         } catch (JSONException e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_JSON, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_JSON, e);
         } catch (Exception e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_EXECUTE_REQUEST, e);
         }
     }
@@ -278,7 +282,9 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 response.sendRedirect(redirectUrl + DuoAuthenticatorConstants.DuoErrors.ERROR_GETTING_VERIFIED_USER);
             }
         } catch (IOException e) {
-            throw new AuthenticationFailedException("Authentication Failed: An IOException was caught. ", e);
+            String msg = "Authentication Failed: An IOException was caught.";
+            log.error(msg, e);
+            throw new AuthenticationFailedException(msg, e);
         }
     }
 
@@ -357,6 +363,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                             "Cannot find the user realm for the given tenant: " + tenantId);
                 }
             } catch (UserStoreException e) {
+                log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_STORE, e);
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_STORE, e);
             }
         }
@@ -484,8 +491,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 throw new AuthenticationFailedException("Unable to find verified user from DUO ");
             }
         } catch (DuoWebException | NoSuchAlgorithmException | InvalidKeyException | IOException e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
         } catch (JSONException e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_ATTRIBUTES, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_ATTRIBUTES, e);
         }
     }

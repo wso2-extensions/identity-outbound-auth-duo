@@ -41,7 +41,7 @@
             }
         </style>
     </head>
-    <script src="js/Duo-Web-v1.bundled.js"></script>
+    <script src="js/Duo-Web-v2.js"></script>
     <script type="text/javascript">
           var value = '<%=request.getParameter("signreq")%>' ;
           var host = '<%=request.getParameter("duoHost")%>' ;

@@ -19,6 +19,8 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
+import com.duosecurity.Client;
+import com.duosecurity.exception.DuoException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,10 +48,6 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,11 +62,14 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
     private static final long serialVersionUID = 4438354156955223654L;
     private static final Log log = LogFactory.getLog(DuoAuthenticator.class);
+    private transient Client duoClient;
 
     @Override
     public boolean canHandle(HttpServletRequest request) {
 
-        return request.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE) != null;
+        return request.getParameter(DuoAuthenticatorConstants.AUTHENTICATOR_NAME) != null &&
+                request.getParameter(DuoAuthenticatorConstants.DUO_STATE) != null &&
+                request.getParameter(DuoAuthenticatorConstants.DUO_CODE) != null;
     }
 
     @Override
@@ -103,33 +104,55 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             checkStatusCode(response, context);
         } else if (StringUtils.isNotEmpty(username)) {
             try {
-                String signRequest = DuoWeb.signRequest(authenticatorProperties.get
+                String redirectUri = "https://localhost:9443/commonauth" + "?" +
+                        FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier() + "&" +
+                        "&" + DuoAuthenticatorConstants.AUTHENTICATOR_NAME + "=true";
+
+                duoClient = new Client.Builder(authenticatorProperties.get
                         (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
-                        (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
-                String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?"
-                        + FrameworkConstants.RequestParams.AUTHENTICATOR +
-                        "=" + URLEncoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME,
-                        StandardCharsets.UTF_8.toString()) +
-                        "&" + FrameworkConstants.RequestParams.TYPE + "=" +
-                        DuoAuthenticatorConstants.RequestParams.DUO + "&" +
-                        DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
-                        URLEncoder.encode(signRequest, StandardCharsets.UTF_8.toString()) + "&" +
-                        FrameworkConstants.SESSION_DATA_KEY + "=" +
-                        context.getContextIdentifier() + "&" +
-                        DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
-                        URLEncoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST),
-                                StandardCharsets.UTF_8.toString());
-                String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
+                        (DuoAuthenticatorConstants.SECRET_KEY), authenticatorProperties.get
+                        (DuoAuthenticatorConstants.HOST), redirectUri).build();
+                duoClient.healthCheck();
+                String state = duoClient.generateState();
+                context.setProperty(DuoAuthenticatorConstants.DUO_STATE, state);
+
+                String duoUrl = duoClient.createAuthUrl(username, state);
+//                String signRequest = DuoWeb.signRequest(authenticatorProperties.get
+//                        (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
+//                        (DuoAuthenticatorConstants.SECRET_KEY), integrationSecretKey, username);
+//                String enrollmentPage = DuoAuthenticatorConstants.DUO_PAGE + "?"
+//                        + FrameworkConstants.RequestParams.AUTHENTICATOR +
+//                        "=" + URLEncoder.encode(getName() + ":" + FrameworkConstants.LOCAL_IDP_NAME,
+//                        StandardCharsets.UTF_8.toString()) +
+//                        "&" + FrameworkConstants.RequestParams.TYPE + "=" +
+//                        DuoAuthenticatorConstants.RequestParams.DUO + "&" +
+//                        DuoAuthenticatorConstants.RequestParams.SIG_REQUEST + "=" +
+//                        URLEncoder.encode(signRequest, StandardCharsets.UTF_8.toString()) + "&" +
+//                        FrameworkConstants.SESSION_DATA_KEY + "=" +
+//                        context.getContextIdentifier() + "&" +
+//                        DuoAuthenticatorConstants.RequestParams.DUO_HOST + "=" +
+//                        URLEncoder.encode(authenticatorProperties.get(DuoAuthenticatorConstants.HOST),
+//                                StandardCharsets.UTF_8.toString());
+//                String duoUrl = IdentityUtil.getServerURL(enrollmentPage, false, false);
                 response.sendRedirect(duoUrl);
             } catch (IOException e) {
                 log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
+            } catch (DuoException e) {
+                throw new AuthenticationFailedException("Error occurred while initiating Duo client", e);
             }
+//            catch (URLBuilderException e) {
+//                throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
+//            }
         } else {
             throw new AuthenticationFailedException("Duo authenticator failed to initialize");
         }
     }
 
+//    private String getCallbackUrl() throws URLBuilderException {
+//
+//        return ServiceURLBuilder.create().addPath(FrameworkConstants.COMMONAUTH).build().getAbsolutePublicURL();
+//    }
     /**
      * Check if the tenant domain should be appended or not.
      *
@@ -396,6 +419,17 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         return mobileNumber;
     }
 
+    private void verifyResponse(String contextState, String responseState) throws DuoException {
+        if (contextState != null && responseState != null && contextState.equals(responseState)) {
+
+            if (log.isDebugEnabled()) {
+                log.debug("Duo response state matches with the context state");
+            }
+            return;
+        } else {
+            throw new DuoException("Duo response state does not match with the context state");
+        }
+    }
     /**
      * Get the configuration properties of UI.
      */
@@ -469,14 +503,36 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     protected void processAuthenticationResponse(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context) throws AuthenticationFailedException {
 
-        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
+//        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        String requestState = request.getParameter(DuoAuthenticatorConstants.DUO_STATE);
+        String requestDuoCode = request.getParameter(DuoAuthenticatorConstants.DUO_CODE);
+
         try {
-            String username = DuoWeb.verifyResponse(authenticatorProperties.get
-                            (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
-                            (DuoAuthenticatorConstants.SECRET_KEY), context.getProperty
-                            (DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY).toString(),
-                    request.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE));
+//            String username = DuoWeb.verifyResponse(authenticatorProperties.get
+//                            (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
+//                            (DuoAuthenticatorConstants.SECRET_KEY), context.getProperty
+//                            (DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY).toString(),
+//                    request.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE));
+
+            verifyResponse(context.getProperty(DuoAuthenticatorConstants.DUO_STATE).toString(), requestState);
+
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
+                    .getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
+            if (authenticatedUser == null) {
+                throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
+                        "identifying the user");
+            }
+
+            String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
+
+            if (username == null) {
+                throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
+                        "identifying the user");
+            }
+
+            duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, username);
+
             if (log.isDebugEnabled()) {
                 log.debug("Authenticated user: " + username);
             }
@@ -490,7 +546,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 context.setProperty(DuoAuthenticatorConstants.UNABLE_TO_FIND_VERIFIED_USER, true);
                 throw new AuthenticationFailedException("Unable to find verified user from DUO ");
             }
-        } catch (DuoWebException | NoSuchAlgorithmException | InvalidKeyException | IOException e) {
+        } catch (DuoException e) {
             log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
         } catch (JSONException e) {

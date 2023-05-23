@@ -60,6 +60,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -133,14 +134,18 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for canHandle() method true case.")
     public void testCanHandleTrue() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn("response");
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.AUTHENTICATOR_NAME)).thenReturn("DuoAuth");
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn("state");
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn("code");
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), true);
     }
 
     @Test(description = "Test case for canHandle() method false case.")
     public void testCanHandleFalse() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn(null);
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.AUTHENTICATOR_NAME)).thenReturn(null);
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn(null);
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn(null);
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), false);
     }
 
@@ -161,7 +166,8 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for retryAuthenticationEnabled() method.")
     public void testRetryAuthenticationEnabled() throws Exception {
 
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "retryAuthenticationEnabled"), true);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator,
+                "retryAuthenticationEnabled")).get(), true);
     }
 
     @Test(description = "Test case for getContextIdentifier() method.")
@@ -244,8 +250,8 @@ public class DuoAuthenticatorTest {
         jo.put("number", "0771234567");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
-                context, jsonArray, "0771234567"), true);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567")).get(), true);
     }
 
     @Test(description = "Test case for isValidPhoneNumber() method false")
@@ -255,8 +261,8 @@ public class DuoAuthenticatorTest {
         jo.put("number", "");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
-                context, jsonArray, "0771234567"), false);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567")).get(), false);
     }
 
     @Test(description = "Test case for getConfigurationProperties() method.")

@@ -38,6 +38,8 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
+import org.wso2.carbon.identity.core.ServiceURLBuilder;
+import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
@@ -104,7 +106,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             checkStatusCode(response, context);
         } else if (StringUtils.isNotEmpty(username)) {
             try {
-                String redirectUri = "https://localhost:9443/commonauth" + "?" +
+                String redirectUri = getCallbackUrl() + "?" +
                         FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier() + "&" +
                         "&" + DuoAuthenticatorConstants.AUTHENTICATOR_NAME + "=true";
 
@@ -140,19 +142,18 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             } catch (DuoException e) {
                 throw new AuthenticationFailedException("Error occurred while initiating Duo client", e);
+            } catch (URLBuilderException e) {
+                throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
             }
-//            catch (URLBuilderException e) {
-//                throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
-//            }
         } else {
             throw new AuthenticationFailedException("Duo authenticator failed to initialize");
         }
     }
 
-//    private String getCallbackUrl() throws URLBuilderException {
-//
-//        return ServiceURLBuilder.create().addPath(FrameworkConstants.COMMONAUTH).build().getAbsolutePublicURL();
-//    }
+    private String getCallbackUrl() throws URLBuilderException {
+
+        return ServiceURLBuilder.create().addPath(FrameworkConstants.COMMONAUTH).build().getAbsolutePublicURL();
+    }
     /**
      * Check if the tenant domain should be appended or not.
      *

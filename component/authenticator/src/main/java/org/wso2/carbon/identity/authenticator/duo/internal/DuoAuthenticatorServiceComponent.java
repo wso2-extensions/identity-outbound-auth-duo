@@ -20,6 +20,12 @@ package org.wso2.carbon.identity.authenticator.duo.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticator;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -27,15 +33,18 @@ import org.wso2.carbon.user.core.service.RealmService;
 import java.util.Hashtable;
 
 /**
- * @scr.component name="identity.application.authenticator.duo" immediate="true"
- * @scr.reference name="realm.service"
- * interface="org.wso2.carbon.user.core.service.RealmService"cardinality="1..1"
- * policy="dynamic" bind="setRealmService" unbind="unsetRealmService"
+ * Service Component for Duo Authenticator
  */
+@Component(
+        name = "identity.application.authenticator.duo",
+        immediate = true
+)
 public class DuoAuthenticatorServiceComponent {
 
     private static final Log log = LogFactory.getLog(DuoAuthenticatorServiceComponent.class);
+    private RealmService realmService = null;
 
+    @Activate
     protected void activate(ComponentContext ctxt) {
         try {
             DuoAuthenticator authenticator = new DuoAuthenticator();
@@ -50,19 +59,32 @@ public class DuoAuthenticatorServiceComponent {
         }
     }
 
+    @Deactivate
     protected void deactivate(ComponentContext ctxt) {
         if (log.isDebugEnabled()) {
             log.info("DuoAuthenticator bundle is deactivated");
         }
     }
 
-    protected void setRealmService(RealmService realmService) {
-        log.debug("Setting the Realm Service");
-        DuoServiceHolder.getInstance().setRealmService(realmService);
+    @Reference(
+            name = "org.wso2.carbon.duo.authenticator.realmservice",
+            service = RealmService.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRealmService")
+    protected void setRealmService(RealmService realmSrv) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting the Realm Service.");
+        }
+        realmService = realmSrv;
     }
 
-    protected void unsetRealmService(RealmService realmService) {
-        log.debug("UnSetting the Realm Service");
-        DuoServiceHolder.getInstance().setRealmService(null);
+    protected void unsetRealmService(RealmService realmSrv) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Un-setting the Realm Service.");
+        }
+        realmService = null;
     }
 }

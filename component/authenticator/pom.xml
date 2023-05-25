@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>4.0.0</version>
+            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp</groupId>
@@ -160,18 +160,13 @@
             <version>5.25.92</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
+            <version>${apache.felix.scr.ds.annotations.version}</version>
+        </dependency>
     </dependencies>
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.5.0</version>
-                    <extensions>true</extensions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -201,11 +196,11 @@
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-                <version>1.7.2</version>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.felix</groupId>-->
+<!--                <artifactId>maven-scr-plugin</artifactId>-->
+<!--                <version>1.7.2</version>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -313,5 +308,6 @@
         <maven.checkstyleplugin.version>3.1.0</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.5</maven.findbugsplugin.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+        <apache.felix.scr.ds.annotations.version>1.2.4</apache.felix.scr.ds.annotations.version>
     </properties>
 </project>

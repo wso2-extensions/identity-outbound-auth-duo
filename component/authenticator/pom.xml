@@ -23,7 +23,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.connector</artifactId>
-    <version>1.1.17</version>
+    <version>1.1.18-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon - Authenticator Library For Duo</name>
     <url>http://wso2.org</url>
@@ -196,11 +196,6 @@
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.felix</groupId>-->
-<!--                <artifactId>maven-scr-plugin</artifactId>-->
-<!--                <version>1.7.2</version>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

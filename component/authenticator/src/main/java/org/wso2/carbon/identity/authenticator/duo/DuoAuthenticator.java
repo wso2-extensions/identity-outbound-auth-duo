@@ -80,8 +80,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             throws AuthenticationFailedException {
 
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
-//        String integrationSecretKey = DuoAuthenticatorConstants.stringGenerator();
-//        context.setProperty(DuoAuthenticatorConstants.INTEGRATION_SECRET_KEY, integrationSecretKey);
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
 
@@ -493,7 +491,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     protected void processAuthenticationResponse(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context) throws AuthenticationFailedException {
 
-//        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
         String requestState = request.getParameter(DuoAuthenticatorConstants.DUO_STATE);
         String requestDuoCode = request.getParameter(DuoAuthenticatorConstants.DUO_CODE);

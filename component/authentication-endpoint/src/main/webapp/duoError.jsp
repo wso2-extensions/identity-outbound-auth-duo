@@ -47,7 +47,7 @@
                 } else if (errorMessage.equalsIgnoreCase("unable.to.get.duo.mobileNumber")) {
                     errorMessage = "Unable to get the registered phone number from Duo. Authentication failed.";
                 } else if (errorMessage.equalsIgnoreCase("unable.to.find.number")) {
-                    errorMessage = "User may not have a mobile number in user's profile for DUO Authentication. Please update it.";
+                    errorMessage = "User may not have a mobile number in user's profile for Duo Authentication. Please update it.";
                 } else if (errorMessage.equalsIgnoreCase("number.mismatch")) {
                     errorMessage = "Authentication failed due to mismatch in mobile numbers. Please update the correct registered duo mobile number in user profile.";
                 } else if (errorMessage.equalsIgnoreCase("user.not.found")) {
@@ -102,7 +102,7 @@
                 <div class="container col-xs-10 col-sm-6 col-md-6 col-lg-4 col-centered wr-content wr-login col-centered">
                     <div>
                         <h2 class="wr-title blue-bg padding-double white boarder-bottom-blue margin-none">
-                            Failed Authentication with DUO &nbsp;&nbsp;</h2>
+                            Failed Authentication with Duo &nbsp;&nbsp;</h2>
 
                     </div>
                     <div class="boarder-all ">

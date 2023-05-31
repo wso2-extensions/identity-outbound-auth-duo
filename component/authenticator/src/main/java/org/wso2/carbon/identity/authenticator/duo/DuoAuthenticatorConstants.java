@@ -82,7 +82,7 @@ public abstract class DuoAuthenticatorConstants {
         public static final String ERROR_NUMBER_MISMATCH = "&authFailure=true&authFailureMsg=number.mismatch";
 
         public static final String ERROR_JSON = "Error while handling JSON object";
-        public static final String ERROR_USER_ATTRIBUTES = "Error while getting user attributes from DUO";
+        public static final String ERROR_USER_ATTRIBUTES = "Error while getting user attributes from Duo";
         public static final String ERROR_VERIFY_USER = "Error while verifying Duo user";
         public static final String ERROR_USER_STORE = "Error while getting mobile number from user store";
         public static final String ERROR_SIGN_REQUEST = "Error while signing Duo request";

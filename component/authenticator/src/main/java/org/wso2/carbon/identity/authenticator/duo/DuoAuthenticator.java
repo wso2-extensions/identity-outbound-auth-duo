@@ -167,11 +167,11 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get DUO user's information.
+     * Get Duo user's information.
      *
      * @param context  the authentication context
      * @param username the username
-     * @return DUO user information
+     * @return Duo user information
      * @throws AuthenticationFailedException
      */
     private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {
@@ -189,7 +189,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             JSONArray userInfo = new JSONArray(result.toString());
             if (userInfo.length() == 0) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Couldn't get the DUO user information");
+                    log.debug("Couldn't get the Duo user information");
                 }
                 context.setProperty(DuoAuthenticatorConstants.USER_NOT_REGISTERED_IN_DUO, true);
                 throw new AuthenticationFailedException("Couldn't find the user information ");
@@ -228,7 +228,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 context.setSubject(AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier(username));
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("The mobile claim value and registered DUO mobile number should be in same format");
+                    log.debug("The mobile claim value and registered Duo mobile number should be in same format");
                 }
                 context.setProperty(DuoAuthenticatorConstants.NUMBER_MISMATCH, true);
                 throw new AuthenticationFailedException("Authentication failed due to mismatch in mobile numbers");
@@ -255,10 +255,10 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         if (phoneArray.length() == 0) {
             if (log.isDebugEnabled()) {
-                log.debug("Couldn't get the phone number of DUO user");
+                log.debug("Couldn't get the phone number of Duo user");
             }
             context.setProperty(DuoAuthenticatorConstants.MOBILE_NUMBER_NOT_FOUND, true);
-            throw new AuthenticationFailedException("User doesn't have a mobile number in DUO for Authentication ");
+            throw new AuthenticationFailedException("User doesn't have a mobile number in Duo for Authentication ");
         } else {
             for (int i = 0; i < phoneArray.length(); i++) {
                 if (((JSONObject) phoneArray.get(i)).getString(DuoAuthenticatorConstants.DUO_NUMBER).equals(mobile)) {
@@ -304,7 +304,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     }
 
     /**
-     * Get DUO custom error page to handle exception.
+     * Get Duo custom error page to handle exception.
      *
      * @param context authentication
      * @return redirect url
@@ -522,7 +522,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
             if (log.isDebugEnabled()) {
                 log.debug("Authenticated user: " + username);
-                log.debug("Authentication result: " + duoToken.getAuth_result().getResult());
+                log.debug("Duo Authentication status: " + duoToken.getAuth_result().getStatus_msg());
             }
             if (StringUtils.isNotEmpty(username)) {
                 if (Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION))) {

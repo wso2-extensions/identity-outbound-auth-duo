@@ -23,6 +23,7 @@ import com.duosecurity.Client;
 import com.duosecurity.client.Admin;
 import com.duosecurity.client.Http;
 import com.duosecurity.exception.DuoException;
+import com.duosecurity.model.Token;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,20 +112,20 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request) + "&" +
                         "&" + DuoAuthenticatorConstants.AUTHENTICATOR_NAME + "=true";
 
-                // Step 1
+                // Step 1: Create Duo Client
                 duoClient = new Client.Builder(authenticatorProperties.get
                         (DuoAuthenticatorConstants.CLIENT_ID), authenticatorProperties.get
                         (DuoAuthenticatorConstants.CLIENT_SECRET), authenticatorProperties.get
                         (DuoAuthenticatorConstants.HOST), redirectUri).build();
-                // Step 2
+                // Step 2: Call Duo health check
                 duoClient.healthCheck();
                 String state = duoClient.generateState();
                 context.setProperty(DuoAuthenticatorConstants.DUO_STATE, state);
 
-                // Step 3
+                // Step 3: Generate and save a state variable for validation purposes
                 String duoUrl = duoClient.createAuthUrl(username, state);
 
-                // Step 4
+                // Step 4: Create the authUrl and redirect to it
                 response.sendRedirect(duoUrl);
             } catch (IOException e) {
                 log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
@@ -499,6 +500,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         String requestDuoCode = request.getParameter(DuoAuthenticatorConstants.DUO_CODE);
 
         try {
+            // Step 5: Validate state returned from Duo is the same as the one saved previously.
+            // If it isn't return an error
             verifyResponse(context.getProperty(DuoAuthenticatorConstants.DUO_STATE).toString(), requestState);
 
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
@@ -514,11 +517,12 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
                         "identifying the user");
             }
-
-            duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, username);
+            // Step 6: Exchange the auth duoCode for a Token object
+            Token duoToken = duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, username);
 
             if (log.isDebugEnabled()) {
                 log.debug("Authenticated user: " + username);
+                log.debug("Authentication result: " + duoToken.getAuth_result().getResult());
             }
             if (StringUtils.isNotEmpty(username)) {
                 if (Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION))) {

@@ -78,6 +78,7 @@ public class DuoAuthenticatorServiceComponent {
             log.debug("Setting the Realm Service.");
         }
         realmService = realmSrv;
+        DuoServiceHolder.getInstance().setRealmService(realmService);
     }
 
     protected void unsetRealmService(RealmService realmSrv) {
@@ -86,5 +87,6 @@ public class DuoAuthenticatorServiceComponent {
             log.debug("Un-setting the Realm Service.");
         }
         realmService = null;
+        DuoServiceHolder.getInstance().setRealmService(null);
     }
 }

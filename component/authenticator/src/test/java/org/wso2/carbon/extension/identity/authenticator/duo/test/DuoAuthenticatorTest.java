@@ -47,7 +47,6 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticator;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticatorConstants;
-import org.wso2.carbon.identity.authenticator.duo.DuoHttp;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -75,7 +74,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
  * Test case for Mobile based 2nd factor Local Authenticator.
  */
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
-        IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class,
+        IdentityUtil.class, OkHttpClient.class, Request.class, Response.class,
         FederatedAuthenticatorUtil.class, DuoServiceHolder.class})
 public class DuoAuthenticatorTest {
 

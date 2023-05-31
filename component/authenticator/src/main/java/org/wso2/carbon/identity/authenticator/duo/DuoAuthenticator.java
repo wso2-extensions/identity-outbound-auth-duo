@@ -20,6 +20,8 @@
 package org.wso2.carbon.identity.authenticator.duo;
 
 import com.duosecurity.Client;
+import com.duosecurity.client.Admin;
+import com.duosecurity.client.Http;
 import com.duosecurity.exception.DuoException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -111,8 +113,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
                 // Step 1
                 duoClient = new Client.Builder(authenticatorProperties.get
-                        (DuoAuthenticatorConstants.INTEGRATION_KEY), authenticatorProperties.get
-                        (DuoAuthenticatorConstants.SECRET_KEY), authenticatorProperties.get
+                        (DuoAuthenticatorConstants.CLIENT_ID), authenticatorProperties.get
+                        (DuoAuthenticatorConstants.CLIENT_SECRET), authenticatorProperties.get
                         (DuoAuthenticatorConstants.HOST), redirectUri).build();
                 // Step 2
                 duoClient.healthCheck();
@@ -174,14 +176,15 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {
 
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
-        DuoHttp duoRequest = new DuoHttp(DuoAuthenticatorConstants.HTTP_GET,
-                authenticatorProperties.get(DuoAuthenticatorConstants.HOST), DuoAuthenticatorConstants.API_USER);
-        duoRequest.addParam(DuoAuthenticatorConstants.DUO_USERNAME, username);
+        Http duoAdminRequest = new Admin.AdminBuilder(DuoAuthenticatorConstants.HTTP_GET,
+                        authenticatorProperties.get(DuoAuthenticatorConstants.HOST),
+                        DuoAuthenticatorConstants.API_USER).build();
+        duoAdminRequest.addParam(DuoAuthenticatorConstants.DUO_USERNAME, username);
         try {
-            duoRequest.signRequest(authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_IKEY),
+            duoAdminRequest.signRequest(authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_IKEY),
                     authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_SKEY));
             //Execute Duo API request
-            Object result = duoRequest.executeRequest();
+            Object result = duoAdminRequest.executeRequest();
             JSONArray userInfo = new JSONArray(result.toString());
             if (userInfo.length() == 0) {
                 if (log.isDebugEnabled()) {
@@ -427,7 +430,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         List<Property> configProperties = new ArrayList<>();
 
         Property duoHost = new Property();
-        duoHost.setDisplayName("Host");
+        duoHost.setDisplayName("API hostname");
         duoHost.setName(DuoAuthenticatorConstants.HOST);
         duoHost.setDescription("Enter host name of Duo Account");
         duoHost.setRequired(true);
@@ -435,9 +438,9 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         configProperties.add(duoHost);
 
         Property integrationKey = new Property();
-        integrationKey.setDisplayName("Integration Key");
-        integrationKey.setName(DuoAuthenticatorConstants.INTEGRATION_KEY);
-        integrationKey.setDescription("Enter Integration Key");
+        integrationKey.setDisplayName("Client ID");
+        integrationKey.setName(DuoAuthenticatorConstants.CLIENT_ID);
+        integrationKey.setDescription("Enter Client ID");
         integrationKey.setRequired(true);
         integrationKey.setDisplayOrder(2);
         configProperties.add(integrationKey);
@@ -451,9 +454,9 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         configProperties.add(adminIntegrationKey);
 
         Property secretKey = new Property();
-        secretKey.setDisplayName("Secret Key");
-        secretKey.setName(DuoAuthenticatorConstants.SECRET_KEY);
-        secretKey.setDescription("Enter Secret Key");
+        secretKey.setDisplayName("Client Secret");
+        secretKey.setName(DuoAuthenticatorConstants.CLIENT_SECRET);
+        secretKey.setDescription("Enter Client Secret");
         secretKey.setRequired(true);
         secretKey.setConfidential(true);
         secretKey.setDisplayOrder(4);

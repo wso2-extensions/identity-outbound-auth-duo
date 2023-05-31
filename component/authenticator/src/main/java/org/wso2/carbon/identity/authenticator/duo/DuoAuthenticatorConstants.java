@@ -29,8 +29,8 @@ public abstract class DuoAuthenticatorConstants {
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHENTICATED_USER = "authenticatedUser";
     public static final String AUTHENTICATOR_FRIENDLY_NAME = "duo";
-    public static final String INTEGRATION_KEY = "IntegrationKey";
-    public static final String SECRET_KEY = "SecretKey";
+    public static final String CLIENT_ID = "ClientID";
+    public static final String CLIENT_SECRET = "ClientSecret";
     public static final String ADMIN_IKEY = "AdminIntegrationKey";
     public static final String ADMIN_SKEY = "AdminSecretKey";
     public static final String HOST = "DuoHost";

@@ -34,7 +34,6 @@ public abstract class DuoAuthenticatorConstants {
     public static final String ADMIN_IKEY = "AdminIntegrationKey";
     public static final String ADMIN_SKEY = "AdminSecretKey";
     public static final String HOST = "DuoHost";
-    public static final String SIG_RESPONSE = "sig_response";
     public static final String MOBILE_CLAIM = "http://wso2.org/claims/mobile";
     public static final String DUO_NUMBER = "number";
     public static final String API_USER = "/admin/v1/users";
@@ -46,7 +45,6 @@ public abstract class DuoAuthenticatorConstants {
     public static final String DUO_PAGE = "duoauthenticationendpoint/duoAuth.jsp";
     public static final String DUO_ERROR_PAGE = "duoauthenticationendpoint/duoError.jsp";
     public static final String ENABLE_MOBILE_VERIFICATION = "EnableMobileVerification";
-    public static final String INTEGRATION_SECRET_KEY = "integrationSecretKey";
     public static final String SESSION_DATA_KEY = "sessionDataKey";
     public static final String HTTP_GET = "GET";
     public static final String RAND = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -60,6 +58,7 @@ public abstract class DuoAuthenticatorConstants {
     public static final String TENANT_DOMAIN = "TenantDomain";
     public static final String SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE = "sendDuoToFederatedMobileAttribute";
     public static final String FEDERATED_MOBILE_ATTRIBUTE_KEY = "federatedMobileNumberAttributeKey";
+    public static final String CLAIM_PASSED_TO_DUO = "claimPassedToDuo";
 
     /**
      * Request Params.

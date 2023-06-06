@@ -86,27 +86,12 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
 
-        // Resolving username needed for authentication process
-        String username = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
-        AuthenticatedUser authenticatedUser = (AuthenticatedUser) context.getProperty(
-                DuoAuthenticatorConstants.AUTHENTICATED_USER);
+        // Resolving claim needed for authentication process
+        String claimPassedToDuo = getClaimPassedToDuo(context);
 
-        if (authenticatedUser != null) {
-            username = authenticatedUser.getUserName();
-            if (!isDisableTenantDomainInUserName(authenticatorProperties)) {
-                username = UserCoreUtil.addTenantDomainToEntry(username, authenticatedUser.getTenantDomain());
-            }
-            if (!isDisableUserStoreDomainInUserName(authenticatorProperties)) {
-                username = IdentityUtil.addDomainToName(username, authenticatedUser.getUserStoreDomain());
-            }
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("user name : " + username);
-        }
         if (context.isRetrying()) {
             checkStatusCode(response, context);
-        } else if (StringUtils.isNotEmpty(username)) {
+        } else if (StringUtils.isNotEmpty(claimPassedToDuo)) {
             try {
                 String redirectUri = getCallbackUrl() + "?" +
                         FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request) + "&" +
@@ -123,7 +108,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 context.setProperty(DuoAuthenticatorConstants.DUO_STATE, state);
 
                 // Step 3: Generate and save a state variable for validation purposes
-                String duoUrl = duoClient.createAuthUrl(username, state);
+                String duoUrl = duoClient.createAuthUrl(claimPassedToDuo, state);
 
                 // Step 4: Create the authUrl and redirect to it
                 response.sendRedirect(duoUrl);
@@ -170,17 +155,18 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * Get Duo user's information.
      *
      * @param context  the authentication context
-     * @param username the username
+     * @param claimPassedToDuo the username
      * @return Duo user information
      * @throws AuthenticationFailedException
      */
-    private JSONArray getUserInfo(AuthenticationContext context, String username) throws AuthenticationFailedException {
+    private JSONArray getUserInfo(AuthenticationContext context, String claimPassedToDuo)
+            throws AuthenticationFailedException {
 
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         Http duoAdminRequest = new Admin.AdminBuilder(DuoAuthenticatorConstants.HTTP_GET,
                         authenticatorProperties.get(DuoAuthenticatorConstants.HOST),
                         DuoAuthenticatorConstants.API_USER).build();
-        duoAdminRequest.addParam(DuoAuthenticatorConstants.DUO_USERNAME, username);
+        duoAdminRequest.addParam(DuoAuthenticatorConstants.DUO_USERNAME, claimPassedToDuo);
         try {
             duoAdminRequest.signRequest(authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_IKEY),
                     authenticatorProperties.get(DuoAuthenticatorConstants.ADMIN_SKEY));
@@ -215,12 +201,12 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      * @throws AuthenticationFailedException
      * @throws JSONException
      */
-    private void checkPhoneNumberValidation(AuthenticationContext context, String username)
+    private void checkPhoneNumberValidation(AuthenticationContext context, String username, String claimPassedToDuo)
             throws AuthenticationFailedException, JSONException {
 
         String mobile = getMobileClaimValue(context);
         if (StringUtils.isNotEmpty(mobile)) {
-            JSONArray userInfo = getUserInfo(context, username);
+            JSONArray userInfo = getUserInfo(context, claimPassedToDuo);
             context.setProperty(DuoAuthenticatorConstants.USER_INFO, userInfo);
             JSONObject object = userInfo.getJSONObject(0);
             JSONArray phoneArray = (JSONArray) object.get(DuoAuthenticatorConstants.DUO_PHONES);
@@ -411,6 +397,12 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         return mobileNumber;
     }
 
+    /**
+     * Extract the mobile number value from federated user attributes.
+     *
+     * @param contextState  state value of the authentication context
+     * @param responseState state value of the duo response
+     */
     private void verifyResponse(String contextState, String responseState) throws DuoException {
         if (contextState != null && responseState != null && contextState.equals(responseState)) {
 
@@ -421,6 +413,65 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else {
             throw new DuoException("Duo response state does not match with the context state");
         }
+    }
+
+    /**
+     * Extract the mobile number value from federated user attributes.
+     *
+     * @param context         the AuthenticationContext
+     */
+    private String getClaimPassedToDuo(AuthenticationContext context) throws AuthenticationFailedException {
+
+        log.debug("Read the Claim value which was set during the  will be passed to duo.");
+
+        Map<String, String> runtimeParams = getRuntimeParams(context);
+
+        if (runtimeParams != null) {
+            if (StringUtils.isNotBlank(runtimeParams.get(DuoAuthenticatorConstants.CLAIM_PASSED_TO_DUO))) {
+                String claimPassedToDuo = runtimeParams.get(DuoAuthenticatorConstants.CLAIM_PASSED_TO_DUO);
+
+                if (log.isDebugEnabled()) {
+                   log.debug("Claim passed to duo: " + claimPassedToDuo);
+                }
+                return runtimeParams.get(DuoAuthenticatorConstants.CLAIM_PASSED_TO_DUO);
+            }
+        }
+        String username = getUsername(context);
+
+        return username;
+    }
+
+    /**
+     * Extract the mobile number value from federated user attributes.
+     *
+     * @param context         {@link AuthenticationContext}
+     */
+    private String getUsername(AuthenticationContext context) throws AuthenticationFailedException {
+
+        String username = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
+        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
+                .getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
+
+        if (authenticatedUser != null) {
+            username = authenticatedUser.getUserName();
+        }
+
+        if (username == null) {
+            throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
+                    "identifying the user");
+        }
+        if (!isDisableTenantDomainInUserName(authenticatorProperties)) {
+            username = UserCoreUtil.addTenantDomainToEntry(username, authenticatedUser.getTenantDomain());
+        }
+        if (!isDisableUserStoreDomainInUserName(authenticatorProperties)) {
+            username = IdentityUtil.addDomainToName(username, authenticatedUser.getUserStoreDomain());
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("user name : " + username);
+        }
+
+        return username;
     }
     /**
      * Get the configuration properties of UI.
@@ -477,6 +528,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         disableUserStoreDomain.setDisplayName("Disable User Store Domain");
         disableUserStoreDomain.setRequired(false);
         disableUserStoreDomain.setDescription("Configured as true to disable user store domain");
+        disableUserStoreDomain.setValue("true");
         disableUserStoreDomain.setDisplayOrder(6);
         configProperties.add(disableUserStoreDomain);
 
@@ -485,6 +537,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         disableTenantDomain.setDisplayName("Disable Tenant Domain");
         disableTenantDomain.setRequired(false);
         disableTenantDomain.setDescription("Configured as true to disable tenant domain");
+        disableTenantDomain.setValue("true");
         disableTenantDomain.setDisplayOrder(7);
         configProperties.add(disableTenantDomain);
 
@@ -518,7 +571,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         "identifying the user");
             }
             // Step 6: Exchange the auth duoCode for a Token object
-            Token duoToken = duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, username);
+            String claimPassedToDuo = getClaimPassedToDuo(context);
+            Token duoToken = duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, claimPassedToDuo);
 
             if (log.isDebugEnabled()) {
                 log.debug("Authenticated user: " + username);
@@ -526,7 +580,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             }
             if (StringUtils.isNotEmpty(username)) {
                 if (Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION))) {
-                    checkPhoneNumberValidation(context, username);
+                    checkPhoneNumberValidation(context, username, claimPassedToDuo);
                 } else {
                     context.setSubject(AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier(username));
                 }

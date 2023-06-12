@@ -133,7 +133,6 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for canHandle() method true case.")
     public void testCanHandleTrue() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.AUTHENTICATOR_NAME)).thenReturn("DuoAuth");
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn("state");
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn("code");
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), true);
@@ -142,7 +141,6 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for canHandle() method false case.")
     public void testCanHandleFalse() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.AUTHENTICATOR_NAME)).thenReturn(null);
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn(null);
         when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn(null);
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), false);
@@ -283,6 +281,22 @@ public class DuoAuthenticatorTest {
         Property disableTenantDomain = new Property();
         configProperties.add(disableTenantDomain);
         Assert.assertEquals(configProperties.size(), duoAuthenticator.getConfigurationProperties().size());
+    }
+
+    @Test(description = "Test case for isValidResponse() method.")
+    public void testIsValidResponseTrue() throws Exception {
+
+        String contextState = "ABC";
+        String duoState = "ABC";
+        Assert.assertTrue(Whitebox.invokeMethod(duoAuthenticator, "isValidResponse", contextState, duoState));
+    }
+
+    @Test(description = "Test case for isValidResponse() method.")
+    public void testIsValidResponseFalse() throws Exception {
+
+        String contextState = "ABC";
+        String duoState = "abc";
+        Assert.assertFalse(Whitebox.invokeMethod(duoAuthenticator, "isValidResponse", contextState, duoState));
     }
 
     @ObjectFactory

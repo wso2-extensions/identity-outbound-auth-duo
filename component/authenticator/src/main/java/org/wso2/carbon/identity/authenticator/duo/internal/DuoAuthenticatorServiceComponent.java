@@ -55,7 +55,7 @@ public class DuoAuthenticatorServiceComponent {
                 log.debug("DuoAuthenticator bundle is activated");
             }
         } catch (Exception e) {
-            log.fatal("Error while activating the Duo authenticator ", e);
+            log.error("Error while activating the Duo authenticator", e);
         }
     }
 

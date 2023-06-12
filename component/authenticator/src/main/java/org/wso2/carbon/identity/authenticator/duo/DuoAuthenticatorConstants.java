@@ -18,8 +18,6 @@
 
 package org.wso2.carbon.identity.authenticator.duo;
 
-import java.util.Random;
-
 /**
  * Constants used by the DuoAuthenticator.
  */
@@ -38,16 +36,13 @@ public abstract class DuoAuthenticatorConstants {
     public static final String DUO_NUMBER = "number";
     public static final String API_USER = "/admin/v1/users";
     public static final String DUO_USERNAME = "username";
-    public static final String DEFAULT_USER_IDENTIFIER = "username";
     public static final String DUO_STATE = "state";
     public static final String DUO_CODE = "duo_code";
     public static final String DUO_PHONES = "phones";
-    public static final String DUO_PAGE = "duoauthenticationendpoint/duoAuth.jsp";
-    public static final String DUO_ERROR_PAGE = "duoauthenticationendpoint/duoError.jsp";
+    public static final String DUO_ERROR_PAGE = "authenticationendpoint/duo_error.do";
     public static final String ENABLE_MOBILE_VERIFICATION = "EnableMobileVerification";
     public static final String SESSION_DATA_KEY = "sessionDataKey";
     public static final String HTTP_GET = "GET";
-    public static final String RAND = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String USER_NOT_REGISTERED_IN_DUO = "userNotFound";
     public static final String NUMBER_MISMATCH = "numberMismatch";
     public static final String MOBILE_NUMBER_NOT_FOUND = "unableToFindMobileNumber";
@@ -58,16 +53,7 @@ public abstract class DuoAuthenticatorConstants {
     public static final String TENANT_DOMAIN = "TenantDomain";
     public static final String SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE = "sendDuoToFederatedMobileAttribute";
     public static final String FEDERATED_MOBILE_ATTRIBUTE_KEY = "federatedMobileNumberAttributeKey";
-    public static final String CLAIM_PASSED_TO_DUO = "claimPassedToDuo";
-
-    /**
-     * Request Params.
-     */
-    public static class RequestParams {
-        public static final String DUO = "duo";
-        public static final String SIG_REQUEST = "signreq";
-        public static final String DUO_HOST = "duoHost";
-    }
+    public static final String DUO_USER_IDENTIFIER = "duoUserIdentifier";
 
     /**
      * Duo errors.
@@ -87,17 +73,5 @@ public abstract class DuoAuthenticatorConstants {
         public static final String ERROR_SIGN_REQUEST = "Error while signing Duo request";
         public static final String ERROR_EXECUTE_REQUEST = "Error while executing Duo API request";
         public static final String ERROR_REDIRECTING = "Error while redirecting to Duo authentication page";
-    }
-
-    /**
-     * Generate integrationSecretKey for Duo Authentication.
-     */
-    public static String stringGenerator() {
-        StringBuilder sb = new StringBuilder(42);
-        Random rnd = new Random();
-        for (int i = 0; i < 42; i++) {
-            sb.append(RAND.charAt(rnd.nextInt(DuoAuthenticatorConstants.RAND.length())));
-        }
-        return sb.toString();
     }
 }

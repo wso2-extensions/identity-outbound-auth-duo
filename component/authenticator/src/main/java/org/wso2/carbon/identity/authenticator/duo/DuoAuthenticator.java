@@ -66,7 +66,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
     private static final long serialVersionUID = 4438354156955223654L;
     private static final Log log = LogFactory.getLog(DuoAuthenticator.class);
-    private transient Client duoClient;
 
     @Override
     public boolean canHandle(HttpServletRequest request) {
@@ -83,6 +82,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
+        Client duoClient;
 
         // Resolving claim needed for authentication process
         String duoUserId = getDuoUserId(context);
@@ -113,7 +113,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             } catch (DuoException e) {
-                throw new AuthenticationFailedException("Error occurred while initiating Duo client", e);
+                throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
             } catch (URLBuilderException e) {
                 throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
             }
@@ -417,14 +417,17 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
      */
     private String getDuoUserId(AuthenticationContext context) throws AuthenticationFailedException {
 
-        log.debug("Read the Claim value which was set during the  will be passed to duo.");
-
+        if (log.isDebugEnabled()) {
+            log.debug("Read the Claim value which will be passed to duo.");
+        }
         Map<String, String> runtimeParams = getRuntimeParams(context);
 
         if (runtimeParams != null) {
             String duoUserId = runtimeParams.get(DuoAuthenticatorConstants.DUO_USER_IDENTIFIER);
             if (StringUtils.isNotBlank(duoUserId)) {
-                log.debug("The claim obtained from the runtime parameters was passed to Duo.");
+                if (log.isDebugEnabled()) {
+                    log.debug("The claim obtained from the runtime parameters was passed to Duo.");
+                }
                 return duoUserId;
             }
         }
@@ -538,8 +541,11 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                                                  AuthenticationContext context) throws AuthenticationFailedException {
 
         Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         String requestState = request.getParameter(DuoAuthenticatorConstants.DUO_STATE);
         String requestDuoCode = request.getParameter(DuoAuthenticatorConstants.DUO_CODE);
+        Client duoClient;
+        String username;
 
         try {
             // Step 5: Validate state returned from Duo is the same as the one saved previously.
@@ -558,12 +564,28 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                         "identifying the user");
             }
 
-            String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
+            username = authenticatedUser.getAuthenticatedSubjectIdentifier();
 
             if (username == null) {
                 throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
                         "identifying the user");
             }
+
+            String redirectUri = getCallbackUrl() + "?" +
+                    FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request);
+
+            duoClient = new Client.Builder(authenticatorProperties.get
+                    (DuoAuthenticatorConstants.CLIENT_ID), authenticatorProperties.get
+                    (DuoAuthenticatorConstants.CLIENT_SECRET), authenticatorProperties.get
+                    (DuoAuthenticatorConstants.HOST), redirectUri).build();
+        } catch (DuoException e) {
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
+            throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
+        } catch (URLBuilderException e) {
+            throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
+        }
+
+        try {
             // Step 6: Exchange the auth duoCode for a Token object which contains metadata about authentication.
             String duoUserId = getDuoUserId(context);
             Token duoToken = duoClient.exchangeAuthorizationCodeFor2FAResult(requestDuoCode, duoUserId);
@@ -582,8 +604,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 throw new AuthenticationFailedException("Unable to find verified user from Duo");
             }
         } catch (DuoException e) {
-            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
-            throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER, e);
+            log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_TOKEN_CREATION, e);
+            throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_TOKEN_CREATION, e);
         } catch (JSONException e) {
             log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_ATTRIBUTES, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_USER_ATTRIBUTES, e);

@@ -73,5 +73,7 @@ public abstract class DuoAuthenticatorConstants {
         public static final String ERROR_SIGN_REQUEST = "Error while signing Duo request";
         public static final String ERROR_EXECUTE_REQUEST = "Error while executing Duo API request";
         public static final String ERROR_REDIRECTING = "Error while redirecting to Duo authentication page";
+        public static final String ERROR_CLIENT_CREATION = "Error while initiating Duo client";
+        public static final String ERROR_TOKEN_CREATION = "Error while creating exchange token after 2FA";
     }
 }

@@ -1,21 +1,21 @@
 /*
- *  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
  *
- *  WSO2 Inc. licenses this file to you under the Apache License,
- *  Version 2.0 (the "License"); you may not use this file except
- *  in compliance with the License.
- *  You may obtain a copy of the License at
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
 package org.wso2.carbon.extension.identity.authenticator.duo.test;
 
 import com.squareup.okhttp.OkHttpClient;
@@ -47,7 +47,6 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticator;
 import org.wso2.carbon.identity.authenticator.duo.DuoAuthenticatorConstants;
-import org.wso2.carbon.identity.authenticator.duo.DuoHttp;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoAuthenticatorServiceComponent;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -60,6 +59,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -74,7 +74,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
  * Test case for Mobile based 2nd factor Local Authenticator.
  */
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
-        IdentityUtil.class, DuoHttp.class, OkHttpClient.class, Request.class, Response.class,
+        IdentityUtil.class, OkHttpClient.class, Request.class, Response.class,
         FederatedAuthenticatorUtil.class, DuoServiceHolder.class})
 public class DuoAuthenticatorTest {
 
@@ -133,14 +133,16 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for canHandle() method true case.")
     public void testCanHandleTrue() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn("response");
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn("state");
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn("code");
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), true);
     }
 
     @Test(description = "Test case for canHandle() method false case.")
     public void testCanHandleFalse() {
 
-        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.SIG_RESPONSE)).thenReturn(null);
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_STATE)).thenReturn(null);
+        when(httpServletRequest.getParameter(DuoAuthenticatorConstants.DUO_CODE)).thenReturn(null);
         Assert.assertEquals(duoAuthenticator.canHandle(httpServletRequest), false);
     }
 
@@ -161,7 +163,8 @@ public class DuoAuthenticatorTest {
     @Test(description = "Test case for retryAuthenticationEnabled() method.")
     public void testRetryAuthenticationEnabled() throws Exception {
 
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "retryAuthenticationEnabled"), true);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator,
+                "retryAuthenticationEnabled")).get(), true);
     }
 
     @Test(description = "Test case for getContextIdentifier() method.")
@@ -244,8 +247,8 @@ public class DuoAuthenticatorTest {
         jo.put("number", "0771234567");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
-                context, jsonArray, "0771234567"), true);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567")).get(), true);
     }
 
     @Test(description = "Test case for isValidPhoneNumber() method false")
@@ -255,8 +258,8 @@ public class DuoAuthenticatorTest {
         jo.put("number", "");
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jo);
-        Assert.assertEquals(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
-                context, jsonArray, "0771234567"), false);
+        Assert.assertEquals(Optional.ofNullable(Whitebox.invokeMethod(duoAuthenticator, "isValidPhoneNumber",
+                context, jsonArray, "0771234567")).get(), false);
     }
 
     @Test(description = "Test case for getConfigurationProperties() method.")
@@ -278,6 +281,22 @@ public class DuoAuthenticatorTest {
         Property disableTenantDomain = new Property();
         configProperties.add(disableTenantDomain);
         Assert.assertEquals(configProperties.size(), duoAuthenticator.getConfigurationProperties().size());
+    }
+
+    @Test(description = "Test case for isValidResponse() method.")
+    public void testIsValidResponseTrue() throws Exception {
+
+        String contextState = "ABC";
+        String duoState = "ABC";
+        Assert.assertTrue(Whitebox.invokeMethod(duoAuthenticator, "isValidResponse", contextState, duoState));
+    }
+
+    @Test(description = "Test case for isValidResponse() method.")
+    public void testIsValidResponseFalse() throws Exception {
+
+        String contextState = "ABC";
+        String duoState = "abc";
+        Assert.assertFalse(Whitebox.invokeMethod(duoAuthenticator, "isValidResponse", contextState, duoState));
     }
 
     @ObjectFactory

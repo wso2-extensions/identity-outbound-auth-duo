@@ -11,15 +11,12 @@ Tested Platform:
 
 Do the following:
 
-1.  Build the org.wso2.carbon.identity.application.authentication.endpoint and copy the duoauthenticationendpoint.war
-    to <IS-HOME>/repository/deployment/server/webapps/
-
-2.  Build the org.wso2.carbon.identity.authenticator & copy the org.wso2.carbon.extention.identity.authenticator.duo.connector-1.0.0-SNAPSHOT.jar
+1.  Build the org.wso2.carbon.identity.authenticator & copy the org.wso2.carbon.extention.identity.authenticator.duo.connector-2.x.x.jar
     to <IS-HOME>/repository/components/dropins
 
-3.  Update or Introduce the parameters in application-authentication.xml file at location <IS_HOME>/repository/conf/identity and
+2.  Update or Introduce the parameters in application-authentication.xml file at location <IS_HOME>/repository/conf/identity and
             <AuthenticatorConfig name="DuoAuthenticator" enabled="true">
                 <Parameter name="EnableMobileVerification">true</Parameter>
             </AuthenticatorConfig>
 
-4.  Follow the steps in https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Authenticator
+3.  Follow the steps in https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Authenticator

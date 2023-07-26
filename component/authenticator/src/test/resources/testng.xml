@@ -4,8 +4,6 @@
     <test name="duo-authenticator-all" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.carbon.extension.identity.authenticator.duo.test.DuoAuthenticatorTest"/>
-            <class name="org.wso2.carbon.extension.identity.authenticator.duo.test.DuoHttpTest"/>
-            <class name="org.wso2.carbon.extension.identity.authenticator.duo.test.DuoUtilTest"/>
         </classes>
     </test>
 </suite>

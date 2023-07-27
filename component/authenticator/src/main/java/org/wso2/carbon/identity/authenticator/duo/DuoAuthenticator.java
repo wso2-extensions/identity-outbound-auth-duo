@@ -554,7 +554,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                     toString(), requestState);
 
             if (!isValidResponse) {
-                throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER,
+                throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER + 
                         "Authentication failed!. Duo response state does not match with the context state");
             }
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) context

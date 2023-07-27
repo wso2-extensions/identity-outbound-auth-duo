@@ -477,7 +477,7 @@
         </snapshotRepository>
     </distributionManagement>
     <properties>
-        <carbon.identity.version>5.25.166</carbon.identity.version>
+        <carbon.identity.version>5.17.117</carbon.identity.version>
         <carbon.identity.association.version>5.4.0</carbon.identity.association.version>
         <carbon.identity.outbound.auth.openid.version>5.5.0</carbon.identity.outbound.auth.openid.version>
         <carbon.identity.outbound.auth.oidc.version>5.5.0</carbon.identity.outbound.auth.oidc.version>

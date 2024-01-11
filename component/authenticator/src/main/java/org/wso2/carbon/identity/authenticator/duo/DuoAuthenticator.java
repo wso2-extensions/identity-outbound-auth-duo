@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -40,8 +40,7 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.authenticator.duo.internal.DuoServiceHolder;
-import org.wso2.carbon.identity.core.ServiceURLBuilder;
-import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
@@ -92,7 +91,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else if (StringUtils.isNotEmpty(duoUserId)) {
             try {
                 String redirectUri = getCallbackUrl() + "?" +
-                        FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request);
+                        FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier();
 
                 // Step 1: Create Duo Client
                 duoClient = new Client.Builder(authenticatorProperties.get
@@ -114,7 +113,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_REDIRECTING, e);
             } catch (DuoException e) {
                 throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
-            } catch (URLBuilderException e) {
+            } catch (IdentityRuntimeException e) {
                 throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
             }
         } else {
@@ -122,9 +121,9 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         }
     }
 
-    private String getCallbackUrl() throws URLBuilderException {
+    private String getCallbackUrl() throws IdentityRuntimeException {
 
-        return ServiceURLBuilder.create().addPath(FrameworkConstants.COMMONAUTH).build().getAbsolutePublicURL();
+        return IdentityUtil.getServerURL(FrameworkConstants.COMMONAUTH, false, false);
     }
     /**
      * Check if the tenant domain should be appended or not.
@@ -296,7 +295,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
+        Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        String duoErrorPageEndpoint = duoParameters.get(
+                DuoAuthenticatorConstants.DUO_AUTHENTICATION_ENDPOINT_ERROR_PAGE);
+        if (duoErrorPageEndpoint == null) {
+            duoErrorPageEndpoint = DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE;
+        }
+        String duoErrorPageUrl = duoErrorPageEndpoint + "?" + queryParams + "&" +
                 DuoAuthenticatorConstants.AUTHENTICATION + "=" + getName();
         return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
@@ -554,7 +559,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                     toString(), requestState);
 
             if (!isValidResponse) {
-                throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_VERIFY_USER,
+                throw new AuthenticationFailedException(
                         "Authentication failed!. Duo response state does not match with the context state");
             }
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
@@ -581,7 +586,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } catch (DuoException e) {
             log.error(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
             throw new AuthenticationFailedException(DuoAuthenticatorConstants.DuoErrors.ERROR_CLIENT_CREATION, e);
-        } catch (URLBuilderException e) {
+        } catch (IdentityRuntimeException e) {
             throw new AuthenticationFailedException("Error occurred while building the callback URL", e);
         }
 

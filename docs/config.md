@@ -2,7 +2,7 @@
 
 This topic provides instructions on how to configure the Duo Security app and the Identity Server. A sample app is used to demonstrate this integration. See the following sections for more information.
  ````
-This is tested for the Duo Security API version V2.
+This is tested for the Duo Web v4 SDK - Duo Universal Prompt.
  ````
  See the following sections for more information.
 
@@ -17,21 +17,22 @@ This is tested for the Duo Security API version V2.
 1. Go to [https://duo.com](https://duo.com) and click free signup and register.
 2. Log in to Duo Security. Click **Applications** from the left panel and then click the **Protect an Application** button.
 
+    ![alt text](images/duodoc1.png)
+3. In the **Protect an Application**  page, select **Web SDK** from the list. **Web SDK** credentials are **mandatory**.
+
+    ![alt text](images/duodoc2.png)
+4. Once the integration is created, you are given a **Client ID** and a **Client Secret** for your integration. You can use these along with your Duo API hostname when accessing Duo Security APIs.
+
     ![alt text](images/duodoc3.png)
-3. In the **Protect an Application**  page, select **Auth API** from the list. **Auth API** credentials are **mandatory**.
-
-    ![alt text](images/duodoc4.png)
-4. Once the integration is created, you are given a **Secret key** and an **Integration key** for your integration. You can use these along with your Duo host when accessing Duo Security APIs.
-
-    ![alt text](images/auth.png)
 5.  You can also configure the **Admin API** credentials if you need to validate the mobile numbers. When you verify the mobile number, use only these credentials. Navigate back to the **Protect an Application**  page and select  **Admin API**  from the list.  Once the Integration is created, you are given a **Secret key** and an **Integration key** for your integration.
 
+    ![alt text](images/duodoc4.png)
     ![alt text](images/duodoc5.png)
  >> NOTE : If you can not see the type “Admin API” in the dropdown, contact the Duo team through support@duosecurity.com and ask for Admin API permission.
 
 6. When configuring the Admin API, select the Grant read resource permission.
 
- ![alt text](images/duodoc5.png)
+    ![alt text](images/duodoc6.png)
 
  >> NOTE : This step is mandatory if you need to verify the user's mobile number in the user store with the mobile number in Duo Security. This is configured in step 4 of [Deploying Duo Security artifacts](#deploying-duo-security-artifacts).
 
@@ -40,10 +41,9 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 
  1. Place the duoauthenticationendpoint.war file into the <IS_HOME>/repository/deployment/server/webapps directory.
      
- 2. Place the org.wso2.carbon.identity.authenticator.duo-1.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
-    >> NOTE : If you want to upgrade the Duo Authenticator in your existing IS pack, please refer [upgrade instructions](https://docs.wso2.com/display/ISCONNECTORS/Upgrading+an+Authenticator).
+ 2. Place the org.wso2.carbon.identity.authenticator.duo-2.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
 
- 3. Place the [okio-1.9.0.jar](hhttps://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=1.9.0) into the <IS_HOME>/repository/components/lib directory.
+ 3. Place the [okio-1.9.0.jar](https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=1.9.0) into the <IS_HOME>/repository/components/lib directory.
 
     >> NOTE : You may have done this step already if you configured the [Duo Security Provisioning Connector](https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Security+Provisioning+Connector). If so, you can skip this step.
 
@@ -139,26 +139,26 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 ### Deploying travelocity.com sample app
     
    The next step is to deploy the travelocity.com sample app in order to use it in this scenario.
-   To do this, see the topic on [deploying the travelocity.com sample app](https://docs.wso2.com/display/ISCONNECTORS/Deploying+the+Sample+App).
+   To do this, see the topic on [deploying the travelocity.com sample app](https://is.docs.wso2.com/en/5.10.0/learn/deploying-the-sample-app/#deploying-the-travelocity-webapp).
 
 ### Configuring the identity provider
-Now you have to configure WSO2 Identity Server by adding a [new identity provider](https://docs.wso2.com/display/IS530/Adding+and+Configuring+an+Identity+Provider).
+Now you have to configure WSO2 Identity Server by adding a [new identity provider](https://is.docs.wso2.com/en/5.10.0/learn/adding-and-configuring-an-identity-provider).
  1. Download the WSO2 Identity Server from [here](https://wso2.com/identity-and-access-management).
- 2. Run the [WSO2 Identity Server](https://docs.wso2.com/display/IS530/Running+the+Product).
- 3. Log in to the [management console](https://docs.wso2.com/display/IS530/Getting+Started+with+the+Management+Console) as an administrator.
+ 2. Run the [WSO2 Identity Server](https://is.docs.wso2.com/en/latest/get-started/sample-use-cases/set-up).
+ 3. Log in to the [management console](https://is.docs.wso2.com/en/5.10.0/setup/getting-started-with-the-management-console) as an administrator.
  4. In the **Identity Providers** section under the **Main** tab of the management console, click **Add**.
  5. Give a suitable name for **Identity Provider Name**.
  6. Go to **Duo Configuration** under **Federated Authenticators**.
 
-    ![alt text](images/duoIdentity.png)
+    ![alt text](images/duodoc7.png)
  7. Enter the values as given in the above figure.
-    * **Host:** Host of Duo API.
-    * **Integration Key:** Integration Key of Auth API.
-    * **Secret Key:**  Secret Key of Auth API.
-    * **Admin Integration Key:** Integration Key of Admin API (Optional Configuration).
-    * **Admin Secret Key:** Secret Key of Admin API (Optional Configuration).
-    * **Disable User Store Domain:** Configured as true if you wanted to strip off the user store domain from username.
-    * **Disable Tenant Domain:** Configured as true if you wanted to strip off the tenant domain from username.
+    * **API hostname:** Duo API hostname.
+    * **Client ID:** Client ID of the Web SDK.
+    * **Client Secret:**  Client Secret of the Web SDK.
+    * **Admin Integration Key:** Integration Key of the Admin API (Optional Configuration).
+    * **Admin Secret Key:** Secret Key of the Admin API (Optional Configuration).
+    * **Disable User Store Domain:** Configured as true if you want to strip off the user store domain from username.
+    * **Disable Tenant Domain:** Configured as true if you want to strip off the tenant domain from username.
     >> NOTE :  Disable User Store Domain and Disable Tenant Domain are optional configurations, If you want to strip off both user store domain and tenant domain from user name then configured both as true.
  8. Select both check-boxes to **Enable** the Duo Authenticator and make it the **Default**.
  9. Click **Register**.
@@ -169,7 +169,7 @@ You have now added the identity provider.
 The next step is to configure the service provider.
  1. Return to the management console.
  2. In the **Service Providers** section, click **Add** under the **Main** tab.
- 3. Since you are using travelocity as the sample, enter [travelocity.com](https://www.travelocity.com/) in the **Service Provider Name** text box and click **Register**.
+ 3. Since you are using travelocity as the sample, enter `travelocity.com` in the **Service Provider Name** text box and click **Register**.
  4. In the **Inbound Authentication Configuration** section, click **Configure** under the **SAML2 Web SSO Configuration** section.
 
     ![alt text](images/samlWebSSOConfiguration.png)
@@ -198,7 +198,7 @@ You have now added and configured the service provider.
  
 1.  To test the sample, go to the following URL:
     http://<TOMCAT_HOST>:<TOMCAT_PORT>/travelocity.com/index.jsp . E.g.,
-    http://localhost:8080/travelocity.com . Login with to
+    http://localhost:8081/travelocity.com . Login with to
     travelocity.com via the WSO2 Identity Server.
 
     ![alt text](images/travelocity.png)
@@ -207,7 +207,7 @@ You have now added and configured the service provider.
     ![alt text](images/duobasic.png)
  4. You are directed to the Duo Security authentication page.
 
-    ![alt text](images/duo5.png)
+    ![alt text](images/duodoc8.png)
     
 > >    NOTE : If you haven't installed the Duo app in your mobile, you
 > >    will be guided to install and set-up the application at this

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -221,8 +221,8 @@ public class DuoAuthenticatorTest {
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn
                 (null);
-        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_ERROR_PAGE, false,
-                false)).thenReturn(DuoAuthenticatorConstants.DUO_ERROR_PAGE);
+        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE, false,
+                false)).thenReturn(DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Whitebox.invokeMethod(duoAuthenticator, "checkStatusCode", httpServletResponse, context);
         verify(httpServletResponse).sendRedirect(captor.capture());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -92,7 +92,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else if (StringUtils.isNotEmpty(duoUserId)) {
             try {
                 String redirectUri = getCallbackUrl() + "?" +
-                        FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request);
+                        FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier();
 
                 // Step 1: Create Duo Client
                 duoClient = new Client.Builder(authenticatorProperties.get
@@ -296,7 +296,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
+        Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        String duoErrorPageEndpoint = duoParameters.get(
+                DuoAuthenticatorConstants.DUO_AUTHENTICATION_ENDPOINT_ERROR_PAGE);
+        if (duoErrorPageEndpoint == null) {
+            duoErrorPageEndpoint = DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE;
+        }
+        String duoErrorPageUrl = duoErrorPageEndpoint + "?" + queryParams + "&" +
                 DuoAuthenticatorConstants.AUTHENTICATION + "=" + getName();
         return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
@@ -328,7 +334,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             throw new AuthenticationFailedException
                     ("Authentication failed: Cannot proceed further without identifying the user. ");
         }
-        username = authenticatedUser.getUserName();
+        username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         duoParameters = FederatedAuthenticatorUtil.getAuthenticatorConfig(DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         if (duoParameters != null
                 && duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE) != null
@@ -519,8 +525,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         disableUserStoreDomain.setName(DuoAuthenticatorConstants.USER_STORE_DOMAIN);
         disableUserStoreDomain.setDisplayName("Disable User Store Domain");
         disableUserStoreDomain.setRequired(false);
-        disableUserStoreDomain.setDescription("Configured as true to disable user store domain");
-        disableUserStoreDomain.setValue("true");
+        disableUserStoreDomain.setDescription("Configure as true to disable user store domain");
+        disableUserStoreDomain.setValue("false");
         disableUserStoreDomain.setDisplayOrder(6);
         configProperties.add(disableUserStoreDomain);
 
@@ -528,8 +534,8 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         disableTenantDomain.setName(DuoAuthenticatorConstants.TENANT_DOMAIN);
         disableTenantDomain.setDisplayName("Disable Tenant Domain");
         disableTenantDomain.setRequired(false);
-        disableTenantDomain.setDescription("Configured as true to disable tenant domain");
-        disableTenantDomain.setValue("true");
+        disableTenantDomain.setDescription("Configure as true to disable tenant domain");
+        disableTenantDomain.setValue("false");
         disableTenantDomain.setDisplayOrder(7);
         configProperties.add(disableTenantDomain);
 

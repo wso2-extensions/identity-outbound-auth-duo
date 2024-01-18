@@ -43,11 +43,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
      
  2. Place the org.wso2.carbon.identity.authenticator.duo-2.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
 
- 3. Place the [okio-1.9.0.jar](https://search.maven.org/remote_content?g=com.squareup.okio&a=okio&v=1.9.0) into the <IS_HOME>/repository/components/lib directory.
-
-    >> NOTE : You may have done this step already if you configured the [Duo Security Provisioning Connector](https://docs.wso2.com/display/ISCONNECTORS/Configuring+Duo+Security+Provisioning+Connector). If so, you can skip this step.
-
-4. To enable the Duo Security authenticator, add the following configuration.
+3. To enable the Duo Security authenticator, add the following configuration.
    
    *For 5.9.0 and later* add the following to the
    `<IS_HOME>/repository/conf/deployment.toml` file
@@ -56,7 +52,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     name="DuoAuthenticator"
     enable=true
     
-5. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the configuration as following,
+4. Optionally, to verify the user store user's mobile number with the same user's mobile number in Duo Security, add the configuration as following,
    
    *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file  
     ```toml
@@ -67,7 +63,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     This verification only requires the Admin API credentials that we
     will later configure.
 
-6.  Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured,
+5. Optionally, if Duo authenticator is configured as the second factor in multi-factor authentication where a federated identity provider is configured as the first step, the following properties should be configured,
 
     *For 5.9.0 and later* add the following to the `<IS_HOME>/repository/conf/deployment.toml` file, 
     ```toml

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
+import org.powermock.modules.testng.PowerMockTestCase;
 import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
 import org.testng.IObjectFactory;
@@ -67,21 +68,20 @@ import javax.servlet.http.HttpServletResponse;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
- * Test case for Mobile based 2nd factor Local Authenticator.
+ * Test case for Mobile based 2nd factor Federated Authenticator.
  */
 @PrepareForTest({IdentityTenantUtil.class, DuoAuthenticatorServiceComponent.class, FrameworkUtils.class,
         IdentityUtil.class, OkHttpClient.class, Request.class, Response.class,
         FederatedAuthenticatorUtil.class, DuoServiceHolder.class})
-public class DuoAuthenticatorTest {
+public class DuoAuthenticatorTest extends PowerMockTestCase {
 
     private DuoAuthenticator duoAuthenticator;
 
     @Spy
-    private AuthenticationContext context;
+    private AuthenticationContext context = new AuthenticationContext();
 
     @Mock
     private SequenceConfig sequenceConfig;
@@ -120,7 +120,6 @@ public class DuoAuthenticatorTest {
     public void setUp() throws Exception {
 
         duoAuthenticator = new DuoAuthenticator();
-        initMocks(this);
         mockStatic(DuoServiceHolder.class);
         when(DuoServiceHolder.getInstance()).thenReturn(serviceHolder);
     }
@@ -187,6 +186,7 @@ public class DuoAuthenticatorTest {
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.setUserName("admin");
+        authenticatedUser.setAuthenticatedSubjectIdentifier("admin@carbon.super");
         when((AuthenticatedUser) context.getProperty("authenticatedUser")).thenReturn(authenticatedUser);
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
@@ -221,8 +221,8 @@ public class DuoAuthenticatorTest {
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn
                 (null);
-        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_ERROR_PAGE, false,
-                false)).thenReturn(DuoAuthenticatorConstants.DUO_ERROR_PAGE);
+        when(IdentityUtil.getServerURL(DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE, false,
+                false)).thenReturn(DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Whitebox.invokeMethod(duoAuthenticator, "checkStatusCode", httpServletResponse, context);
         verify(httpServletResponse).sendRedirect(captor.capture());

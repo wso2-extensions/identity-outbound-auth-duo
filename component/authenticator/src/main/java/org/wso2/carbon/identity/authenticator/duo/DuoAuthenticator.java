@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -23,6 +23,8 @@ import com.duosecurity.client.Admin;
 import com.duosecurity.client.Http;
 import com.duosecurity.exception.DuoException;
 import com.duosecurity.model.Token;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,10 +32,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.extension.identity.helper.FederatedAuthenticatorUtil;
+import org.wso2.carbon.extension.identity.helper.IdentityHelperConstants;
+import org.wso2.carbon.extension.identity.helper.util.IdentityHelperUtil;
 import org.wso2.carbon.identity.application.authentication.framework.AbstractApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
@@ -53,6 +58,8 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,12 +67,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Mobile based 2nd factor Local Authenticator.
+ * Mobile based 2nd factor Federated Authenticator.
  */
 public class DuoAuthenticator extends AbstractApplicationAuthenticator implements FederatedApplicationAuthenticator {
 
     private static final long serialVersionUID = 4438354156955223654L;
     private static final Log log = LogFactory.getLog(DuoAuthenticator.class);
+    private static final String[] NON_USER_ATTRIBUTES
+            = new String[]{ "iss", "aud", "exp", "iat", "auth_time", "auth_result" };
 
     @Override
     public boolean canHandle(HttpServletRequest request) {
@@ -81,6 +90,11 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
         context.setProperty(DuoAuthenticatorConstants.AUTHENTICATION, DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
+        String tenantDomain = context.getTenantDomain();
+        if (!tenantDomain.equals(IdentityHelperConstants.SUPER_TENANT_DOMAIN)) {
+            IdentityHelperUtil.loadApplicationAuthenticationXMLFromRegistry(context, context.getProperty(
+                    IdentityHelperConstants.AUTHENTICATION).toString(), tenantDomain);
+        }
         FederatedAuthenticatorUtil.setUsernameFromFirstStep(context);
         Client duoClient;
 
@@ -92,7 +106,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else if (StringUtils.isNotEmpty(duoUserId)) {
             try {
                 String redirectUri = getCallbackUrl() + "?" +
-                        FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request);
+                        FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier();
 
                 // Step 1: Create Duo Client
                 duoClient = new Client.Builder(authenticatorProperties.get
@@ -146,6 +160,17 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     private boolean isDisableUserStoreDomainInUserName(Map<String, String> authenticatorProperties) {
 
         return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN));
+    }
+
+    /**
+     * Check if the username is used as the identifier.
+     *
+     * @return True if the config is enabled.
+     */
+    private boolean isUsernameAsDuoIdentifier() {
+
+        Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        return Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.USERNAME_AS_DUO_IDENTIFIER));
     }
 
     /**
@@ -296,7 +321,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
+        Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        String duoErrorPageEndpoint = duoParameters.get(
+                DuoAuthenticatorConstants.DUO_AUTHENTICATION_ENDPOINT_ERROR_PAGE);
+        if (duoErrorPageEndpoint == null) {
+            duoErrorPageEndpoint = DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE;
+        }
+        String duoErrorPageUrl = duoErrorPageEndpoint + "?" + queryParams + "&" +
                 DuoAuthenticatorConstants.AUTHENTICATION + "=" + getName();
         return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
@@ -328,7 +359,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             throw new AuthenticationFailedException
                     ("Authentication failed: Cannot proceed further without identifying the user. ");
         }
-        username = authenticatedUser.getUserName();
+        username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         duoParameters = FederatedAuthenticatorUtil.getAuthenticatorConfig(DuoAuthenticatorConstants.AUTHENTICATOR_NAME);
         if (duoParameters != null
                 && duoParameters.get(DuoAuthenticatorConstants.SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE) != null
@@ -431,13 +462,14 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 return duoUserId;
             }
         }
-        String username = getUsername(context);
-
-        return username;
+        if (isUsernameAsDuoIdentifier()) {
+            return getUsername(context);
+        }
+        return getUserId(context);
     }
 
     /**
-     * Extract the mobile number value from federated user attributes.
+     * Extract the username of the authenticating user.
      *
      * @param context         {@link AuthenticationContext}
      */
@@ -465,6 +497,32 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         return username;
     }
+
+    /**
+     * Extract the user ID of the authenticating user.
+     *
+     * @param context         {@link AuthenticationContext}
+     */
+    private String getUserId(AuthenticationContext context) throws AuthenticationFailedException {
+
+        String userId = null;
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
+                .getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
+
+        try {
+            if (authenticatedUser != null) {
+                userId = authenticatedUser.getUserId();
+            }
+            if (userId == null) {
+                throw new UserIdNotFoundException("User id not found for the authenticated user");
+            }
+        } catch (UserIdNotFoundException e) {
+            throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
+                    "identifying the user");
+        }
+        return userId;
+    }
+
     /**
      * Get the configuration properties of UI.
      */
@@ -519,18 +577,20 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         disableUserStoreDomain.setName(DuoAuthenticatorConstants.USER_STORE_DOMAIN);
         disableUserStoreDomain.setDisplayName("Disable User Store Domain");
         disableUserStoreDomain.setRequired(false);
-        disableUserStoreDomain.setDescription("Configured as true to disable user store domain");
+        disableUserStoreDomain.setDescription("Configure as true to disable user store domain");
         disableUserStoreDomain.setValue("true");
         disableUserStoreDomain.setDisplayOrder(6);
+        disableUserStoreDomain.setType("boolean");
         configProperties.add(disableUserStoreDomain);
 
         Property disableTenantDomain = new Property();
         disableTenantDomain.setName(DuoAuthenticatorConstants.TENANT_DOMAIN);
         disableTenantDomain.setDisplayName("Disable Tenant Domain");
         disableTenantDomain.setRequired(false);
-        disableTenantDomain.setDescription("Configured as true to disable tenant domain");
+        disableTenantDomain.setDescription("Configure as true to disable tenant domain");
         disableTenantDomain.setValue("true");
         disableTenantDomain.setDisplayOrder(7);
+        disableTenantDomain.setType("boolean");
         configProperties.add(disableTenantDomain);
 
         return configProperties;
@@ -596,9 +656,11 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
             if (StringUtils.isNotEmpty(username)) {
                 if (Boolean.parseBoolean(duoParameters.get(DuoAuthenticatorConstants.ENABLE_MOBILE_VERIFICATION))) {
                     checkPhoneNumberValidation(context, username, duoUserId);
-                } else {
-                    context.setSubject(AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier(username));
                 }
+                AuthenticatedUser authenticatedUser = AuthenticatedUser
+                        .createFederateAuthenticatedUserFromSubjectIdentifier(duoUserId);
+                authenticatedUser.setUserAttributes(getUserAttributesFromDuoToken(duoToken));
+                context.setSubject(authenticatedUser);
             } else {
                 context.setProperty(DuoAuthenticatorConstants.UNABLE_TO_FIND_VERIFIED_USER, true);
                 throw new AuthenticationFailedException("Unable to find verified user from Duo");
@@ -635,4 +697,32 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         return true;
     }
+
+    private Map<ClaimMapping, String> getUserAttributesFromDuoToken(Token duoToken) {
+
+        Map<ClaimMapping, String> userAttributes = new HashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        TypeReference<Map<String, Object>> reference = new TokenTypeReference();
+        Map<String, Object> map = objectMapper.convertValue(duoToken, reference);
+
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (Arrays.stream(NON_USER_ATTRIBUTES).noneMatch(entry.getKey()::equals)) {
+                if (entry.getKey().equals(DuoAuthenticatorConstants.AUTH_CONTEXT) && entry.getValue() instanceof Map) {
+                    Map<String, Object> authContext = (Map<String, Object>) entry.getValue();
+                    // Add amr value
+                    userAttributes.put(
+                            ClaimMapping.build(DuoAuthenticatorConstants.AMR, DuoAuthenticatorConstants.AMR,
+                                    null, false),
+                            authContext.get(DuoAuthenticatorConstants.FACTOR).toString());
+                } else if (entry.getValue() instanceof String) {
+                    userAttributes.put(
+                            ClaimMapping.build(entry.getKey(), entry.getKey(), null, false),
+                            entry.getValue().toString());
+                }
+            }
+        }
+        return userAttributes;
+    }
+
+    private static final class TokenTypeReference extends TypeReference<Map<String, Object>> { }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -39,7 +39,7 @@ public abstract class DuoAuthenticatorConstants {
     public static final String DUO_STATE = "state";
     public static final String DUO_CODE = "duo_code";
     public static final String DUO_PHONES = "phones";
-    public static final String DUO_ERROR_PAGE = "authenticationendpoint/duo_error.do";
+    public static final String DUO_DEFAULT_ERROR_PAGE = "authenticationendpoint/duo_error.do";
     public static final String ENABLE_MOBILE_VERIFICATION = "EnableMobileVerification";
     public static final String SESSION_DATA_KEY = "sessionDataKey";
     public static final String HTTP_GET = "GET";
@@ -54,6 +54,11 @@ public abstract class DuoAuthenticatorConstants {
     public static final String SEND_DUO_TO_FEDERATED_MOBILE_ATTRIBUTE = "sendDuoToFederatedMobileAttribute";
     public static final String FEDERATED_MOBILE_ATTRIBUTE_KEY = "federatedMobileNumberAttributeKey";
     public static final String DUO_USER_IDENTIFIER = "duoUserIdentifier";
+    public static final String DUO_AUTHENTICATION_ENDPOINT_ERROR_PAGE = "DuoAuthenticationEndpointErrorPage";
+    public static final String USERNAME_AS_DUO_IDENTIFIER = "EnableUsernameAsDuoIdentifier";
+    public static final String AMR = "amr";
+    public static final String AUTH_CONTEXT = "auth_context";
+    public static final String FACTOR = "factor";
 
     /**
      * Duo errors.

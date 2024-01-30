@@ -41,7 +41,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 
  1. Place the duoauthenticationendpoint.war file into the <IS_HOME>/repository/deployment/server/webapps directory.
 
- 2. Place the org.wso2.carbon.identity.authenticator.duo-2.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
+ 2. Place the org.wso2.carbon.identity.authenticator.duo-3.x.x.jar file into the <IS_HOME>/repository/components/dropins directory.
 
  3. To enable the Duo Security authenticator, add the following configuration.
    

@@ -187,6 +187,7 @@ public class DuoAuthenticatorTest {
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         authenticatedUser.setUserName("admin");
+        authenticatedUser.setAuthenticatedSubjectIdentifier("admin@carbon.super");
         when((AuthenticatedUser) context.getProperty("authenticatedUser")).thenReturn(authenticatedUser);
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),

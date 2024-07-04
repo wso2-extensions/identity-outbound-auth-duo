@@ -1,0 +1,89 @@
+{
+    "name": "Duo Security",
+    "owner": "WSO2",
+    "category": "Federated authenticator",
+    "documentationUrl": "https://github.com/wso2-extensions/identity-outbound-auth-duo/blob/master/README.md",
+    "description": "The Duo Security authenticator allows you to authenticate a user using Duo Security through WSO2 Identity Server. The Duo Security provisioning connector enables you to provision users using Duo Security. Duo Security provides security beyond passwords.",
+    "status": "Active",
+    "labels": [],
+    "releases": [
+        {
+            "tagName": "4.0.0",
+            "products": [
+                "IS 7.0.0"
+            ]
+        },
+        {
+            "tagName": "3.0.0",
+            "products": [
+                "IS 6.1.0",
+                "IS 6.0.0",
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "2.0.1",
+            "products": [
+                "IS 5.10.0"
+            ]
+        },
+        {
+            "tagName": "1.1.17",
+            "products": [
+                "IS 5.10.0"
+            ]
+        },
+        {
+            "tagName": "1.1.15",
+            "products": [
+                "IS 5.10.0",
+                "IS 6.0.0"
+            ]
+        },
+        {
+            "tagName": "1.1.14",
+            "products": [
+                "IS 5.10.0",
+                "IS 6.0.0"
+            ]
+        },
+        {
+            "tagName": "1.1.13",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "1.1.11",
+            "products": [
+                "IS 5.10.0",
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "1.1.8",
+            "products": [
+                "IS 5.11.0"
+            ]
+        },
+        {
+            "tagName": "1.1.6",
+            "products": [
+                "IS 5.10.0"
+            ]
+        },
+        {
+            "tagName": "1.1.2",
+            "products": [
+                "IS 5.10.0"
+            ]
+        },
+        {
+            "tagName": "1.0.12",
+            "products": [
+                "IS 5.9.0",
+                "IS 5.7.0"
+            ]
+        }
+    ]
+}

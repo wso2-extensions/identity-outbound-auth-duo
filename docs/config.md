@@ -39,9 +39,9 @@ See the following sections for more information.
 
 If you are migrating to IS 7.0.0 from a previous version, please go through the [Migration Guide](#migration-guide) before proceeding with the following steps.
 
-To download the authenticator and artifacts, go to the [WSO2 store](https://store.wso2.com/store/assets/isconnector/list?q=%22_default%22%3A%22duo%22).
+To download the authenticator and artifacts, go to the [WSO2 store](https://store.wso2.com/connector/identity-outbound-auth-duo).
 
-1. Place the `org.wso2.carbon.identity.authenticator.duo-4.x.x.jar` file into the `<IS_HOME>/repository/components/dropins` directory.
+1. Place the `org.wso2.carbon.extension.identity.authenticator.duo.connector-4.x.x.jar` file into the `<IS_HOME>/repository/components/dropins` directory.
 
 2. From the artifacts, copy the `is-7.0.0/template/duo` directory and paste it in the `<IS_HOME>/repository/resources/identity/extensions/connections` directory.
 >> NOTE : If you are migrating to IS 7.0.0 from a previous version, copy the `migration-is-7.0.0/template/duo` directory instead.
@@ -83,7 +83,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     ```
 
 - `sendDuoToFederatedMobileAttribute` - This specifies whether the mobile number claim should be taken from the claims provided by the Identity Provider.
-- `federatedMobileNumberAttributeKey` - This specifies the value of the mobile claim provided by the Identity Provider. This property must be configured if the `useFederatedMobileClaim` is `true`.
+- `federatedMobileNumberAttributeKey` - This specifies the value of the mobile claim provided by the Identity Provider. This property must be configured if the `sendDuoToFederatedMobileAttribute` is `true`.
 - `usecase` - This field can take one of the following values: local, association, userAttribute, subjectUri. If you do not specify any usecase, the default value is local.
 - `secondaryUserstore` - The user store configuration is maintained per tenant as comma separated values. For example, <Parameter name="secondaryUserstore">jdbc, abc, and xyz</Parameter>.
 
@@ -99,7 +99,7 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
     </tr>
     <tr class="even">
     <td><code>                 association                </code></td>
-    <td><p>The federated username must be associated with the local account in advance in the Dashboard. So the local username is retrieved from the association. To associate the user, log into the <a href="../../learn/using-the-end-user-dashboard">end user dashboard</a> and go to <strong>Associated Account</strong> by clicking <strong>View details</strong> .</p></td>
+    <td><p>The federated username must be associated with the local account in advance in the Dashboard. So the local username is retrieved from the association. To associate the user, log into the end user dashboard and go to <strong>Associated Account</strong> by clicking <strong>View details</strong> .</p></td>
     </tr>
     <tr class="odd">
     <td><code>                 userAttribute                </code></td>

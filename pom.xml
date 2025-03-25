@@ -541,7 +541,7 @@
         <json.chargebee.version>chargebee-1.0</json.chargebee.version>
         <google.json.simple.version>1.1</google.json.simple.version>
         <apache.amber.version>0.22.1358727.wso2v4</apache.amber.version>
-        <json.version>20090211</json.version>
+        <json.version>20231013</json.version>
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
     </properties>
 </project>

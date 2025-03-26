@@ -5,10 +5,10 @@
     "documentationUrl": "https://github.com/wso2-extensions/identity-outbound-auth-duo/blob/master/README.md",
     "description": "The Duo Security authenticator allows you to authenticate a user using Duo Security through WSO2 Identity Server. The Duo Security provisioning connector enables you to provision users using Duo Security. Duo Security provides security beyond passwords.",
     "status": "Active",
-    "labels": [],
+    "labels": ["Federated Authenticator", "Multi-factor Authentication"],
     "releases": [
         {
-            "tagName": "v4.0.0",
+            "tagName": "v4.0.1",
             "products": [
                 "IS 7.0.0",
                 "IS 7.1.0"

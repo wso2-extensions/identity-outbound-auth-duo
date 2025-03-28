@@ -44,7 +44,6 @@ To download the authenticator and artifacts, go to the [WSO2 store](https://stor
 1. Place the `org.wso2.carbon.extension.identity.authenticator.duo.connector-4.x.x.jar` file into the `<IS_HOME>/repository/components/dropins` directory.
 
 2. From the artifacts, copy the `is-7.0.0/template/duo` directory and paste it in the `<IS_HOME>/repository/resources/identity/extensions/connections` directory.
->> NOTE : If you are migrating to IS 7.0.0 from a previous version, copy the `migration-is-7.0.0/template/duo` directory instead.
 
 3. Copy the `is-7.0.0/images/duo` directory and paste it in the `<IS_HOME>/repository/deployment/server/webapps/console/resources/connections/assets/images` directory.
 

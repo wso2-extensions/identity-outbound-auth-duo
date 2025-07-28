@@ -207,6 +207,7 @@
                             org.wso2.carbon.identity.core*;version="${carbon.identity.package.import.version.range}",
                             org.wso2.carbon.utils*;version="${carbon.kernel.package.import.version.range}",
                             org.osgi.service.component;version="${osgi.service.component.imp.pkg.version.range}",
+                            org.json;version="${org.json.package.import.version}",
                             *;resolution:=optional
                         </Import-Package>
                         <Embed-Dependency>

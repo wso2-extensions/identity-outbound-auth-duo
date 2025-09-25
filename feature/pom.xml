@@ -20,10 +20,10 @@
     <parent>
         <groupId>org.wso2.carbon.extension.identity.authenticator.outbound.duo</groupId>
         <artifactId>identity-outbound-auth-duo</artifactId>
-        <version>4.0.14</version>
+        <version>4.0.15-SNAPSHOT</version>
     </parent>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.duo.feature</artifactId>
-    <version>4.0.14</version>
+    <version>4.0.15-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon - identity Duo OTP Feature</name>
     <url>http://wso2.org</url>

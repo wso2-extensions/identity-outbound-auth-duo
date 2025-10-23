@@ -710,10 +710,14 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 if (entry.getKey().equals(DuoAuthenticatorConstants.AUTH_CONTEXT) && entry.getValue() instanceof Map) {
                     Map<String, Object> authContext = (Map<String, Object>) entry.getValue();
                     // Add amr value
-                    userAttributes.put(
-                            ClaimMapping.build(DuoAuthenticatorConstants.AMR, DuoAuthenticatorConstants.AMR,
-                                    null, false),
-                            authContext.get(DuoAuthenticatorConstants.FACTOR).toString());
+                    if (authContext.get(DuoAuthenticatorConstants.FACTOR) != null) {
+                        userAttributes.put(
+                                ClaimMapping.build(DuoAuthenticatorConstants.AMR, DuoAuthenticatorConstants.AMR,
+                                        null, false),
+                                authContext.get(DuoAuthenticatorConstants.FACTOR).toString());
+                    } else {
+                        log.debug("Skipping addition of AMR attribute due to factor value being null.");
+                    }
                 } else if (entry.getValue() instanceof String) {
                     userAttributes.put(
                             ClaimMapping.build(entry.getKey(), entry.getKey(), null, false),

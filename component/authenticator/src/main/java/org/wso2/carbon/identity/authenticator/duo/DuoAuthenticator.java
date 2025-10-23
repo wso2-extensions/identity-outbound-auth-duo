@@ -716,7 +716,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                                         null, false),
                                 authContext.get(DuoAuthenticatorConstants.FACTOR).toString());
                     } else {
-                        log.debug("Auth context or factor value is null — skipping AMR attribute addition.");
+                        log.debug("Skipping addition of AMR attribute due to factor value being null.");
                     }
                 } else if (entry.getValue() instanceof String) {
                     userAttributes.put(

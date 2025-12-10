@@ -534,7 +534,7 @@
         <squareup.okio.version>1.17.6</squareup.okio.version>
         <squareup.okhttp.okhttp.version>2.7.5</squareup.okhttp.okhttp.version>
         <auth0.java.jwt.version>3.3.0</auth0.java.jwt.version>
-        <squareup.okhttp3.okhttp.version>3.14.9</squareup.okhttp3.okhttp.version>
+        <squareup.okhttp3.okhttp.version>4.9.2</squareup.okhttp3.okhttp.version>
         <squareup.okhttp3.logging.version>4.9.1</squareup.okhttp3.logging.version>
         <squareup.retrofit.version>2.9.0</squareup.retrofit.version>
         <google.guava.version>13.0.1</google.guava.version>

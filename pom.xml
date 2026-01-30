@@ -543,6 +543,6 @@
         <apache.amber.version>0.22.1358727.wso2v4</apache.amber.version>
         <json.version>20231013</json.version>
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
-        <org.json.package.import.version>[3.0.0.wso2v1, 4.0.0)</org.json.package.import.version>
+        <org.json.package.import.version.range>[3.0.0.wso2v1, 4.0.0)</org.json.package.import.version.range>
     </properties>
 </project>

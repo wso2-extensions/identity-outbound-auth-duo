@@ -8,10 +8,11 @@
     "labels": ["Federated Authenticator", "Multi-factor Authentication"],
     "releases": [
         {
-            "tagName": "v4.0.18",
+            "tagName": "v4.0.19",
             "products": [
-                "IS 7.0.0",
-                "IS 7.1.0"
+                "IS 7.2.0",
+                "IS 7.1.0",
+                "IS 7.0.0"
             ]
         },
         {
